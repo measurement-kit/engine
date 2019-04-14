@@ -23,16 +23,16 @@ const origMeasurement = `{
 	"test_runtime": 0.253494024276733,
 	"test_start_time": "2016-06-04 17:53:13",
 	"test_version": "0.0.1"
-}`;
+}`
 
 func TestCollectorResubmitIntegration(t *testing.T) {
 	settings := &MKECollectorResubmitSettings{}
-	settings.SetSerializedMeasurement(origMeasurement)
-	settings.SetTimeout(14)
+	settings.SerializedMeasurement = origMeasurement
+	settings.Timeout = 14
 	results := settings.Perform()
-	fmt.Println(results.Logs())
-	fmt.Println(results.UpdatedSerializedMeasurement())
-	if !results.Good() {
+	fmt.Println(results.Logs)
+	fmt.Println(results.UpdatedSerializedMeasurement)
+	if !results.Good {
 		t.Fatal("resubmission failed")
 	}
 }
