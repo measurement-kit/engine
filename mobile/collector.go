@@ -90,6 +90,7 @@ func (x *MKECollectorResubmitSettings) Perform() *MKECollectorResubmitResults {
 		return &out
 	}
 	defer nettest.CloseReport()
+	measurement.ReportID = nettest.Report.ID
 	err = nettest.SubmitMeasurement(&measurement)
 	if err != nil {
 		out.logs = fmt.Sprintf("cannot submit measurement: %s\n", err.Error())
