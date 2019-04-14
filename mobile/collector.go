@@ -5,8 +5,8 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"time"
 
+	"github.com/measurement-kit/engine/mobile/internal"
 	"github.com/measurement-kit/engine/model"
 	"github.com/measurement-kit/engine/nettest"
 )
@@ -65,12 +65,11 @@ func (x *MKECollectorResubmitSettings) Perform() *MKECollectorResubmitResults {
 		return &out
 	}
 	var nettest nettest.Nettest
-	const maxTimeout = int64(120)
-	if x.timeout < 0 || x.timeout > maxTimeout {
-		out.logs = fmt.Sprintf("timeout is negative or too large\n")
+	duration, err := internal.MakeDuration(x.timeout)
+	if err != nil {
+		out.logs = fmt.Sprintf("cannot make duration: %s\n", err.Error())
 		return &out
 	}
-	duration := time.Duration(x.timeout) * time.Second
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
 	defer cancel()
 	nettest.Ctx = ctx
