@@ -22,14 +22,14 @@ type Config = runner.Config
 // - TestStartTime
 // - Measure
 //
-// Call nettest.Measure("", &measurement) to run a measurement.
+// Call nettest.StartMeasurement("", &measurement) to perform a measurement.
 func NewNettest(ctx context.Context, config Config) *nettest.Nettest {
 	return &nettest.Nettest{
 		Ctx:           ctx,
 		TestName:      "psiphontunnel",
 		TestVersion:   "0.0.1",
 		TestStartTime: nettest.FormatTimeNowUTC(),
-		Measure: func(input string, m *model.Measurement) {
+		Main: func(input string, m *model.Measurement, ch <-chan model.Event) {
 			t0 := time.Now()
 			m.TestKeys = runner.Run(ctx, config)
 			m.MeasurementRuntime = time.Now().Sub(t0).Seconds()

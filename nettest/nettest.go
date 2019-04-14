@@ -37,9 +37,9 @@
 // format another time according to the proper format -- just remember
 // that you must use the UTC time here)
 //
-// - nettest.Measure if the nettest is written in Go, otherwise, if the
-// nettest is written in another language, you'll need to call corresponding
-// code to get back the test keys, as described below.
+// - nettest.Main if the nettest is written in Go, otherwise, if the nettest
+// is in a foreign language, you'll need to call corresponding code to get back
+// the test keys, as described below.
 //
 // For example
 //
@@ -49,7 +49,7 @@
 //     nettest.SoftwareName = "example"
 //     nettest.SoftwareVersion = "0.0.1"
 //     nettest.TestStartTime = nettest.FormatTimeNowUTC()
-//     nettest.Measure = func(input string, m *model.Measurement) {
+//     nettest.Main = func(input string, m *model.Measurement, ch <-chan model.Event) {
 //       // perform measurement and initialize m
 //     }
 //
@@ -173,12 +173,15 @@
 // - measurement.Input, which should only be initialized if your
 // nettest requires input
 //
-// If nettest.Measure is initialized, as it should be the case for
+// If nettest.Main is initialized, as it should be the case for all
 // nettests created using a factory function, you can perform a
 // measurement for a specific input and fill the above measurement
 // fields by using:
 //
-//     nettest.Measure(input, &measurement)
+//     for ev := range nettest.StartMeasurement(input, &measurement) {
+//       // handle nettest generated events
+//     }
+//     // nettest done; you may want to inspect measurement
 //
 // where input is an empty string if the nettest does not take any
 // input. Otherwise, you'll need to call the (possibly foreign)
@@ -229,11 +232,15 @@ func FormatTimeNowUTC() string {
 	return time.Now().UTC().Format(DateFormat)
 }
 
-// MeasureFunc is the function running a measurement. Pass an empty string
-// if the nettest does not take input. Remember to initialize the fields
-// of measurement that are not initialized by NewMeasurement (see above for
-// a complete list of such fields).
-type MeasureFunc = func(input string, measurement *model.Measurement)
+// MainFunc is the measurement main. The first argument (input) is the
+// input of the measurement. A nettest that does not take any input expects you
+// to pass an empty string here. The second argument (mstub) is the stub
+// measurement, partially initialized by the nettest. The runner implementation
+// MUST fill all the fields that are not initialized by NewMeasurement (see
+// above for a complete list of such fields). The third argument (ch) is a
+// channel where the nettest should post asynchronous events. The runner
+// MUST NOT close the channel as it is managed by nettest.StartMeasurement.
+type MainFunc = func(input string, mstub *model.Measurement, ch <-chan model.Event)
 
 // Nettest is a nettest.
 type Nettest struct {
@@ -255,8 +262,8 @@ type Nettest struct {
 	// TestStartTime is the UTC time when the test started.
 	TestStartTime string
 
-	// Measure runs the measurement.
-	Measure MeasureFunc
+	// Main is the main function of the measurement
+	Main MainFunc
 
 	// AvailableBouncers contains all the available bouncers.
 	AvailableBouncers []model.Service
@@ -392,6 +399,24 @@ func (nettest *Nettest) NewMeasurement() model.Measurement {
 		TestStartTime:        nettest.TestStartTime,
 		TestVersion:          nettest.TestVersion,
 	}
+}
+
+// StartMeasurement starts the measurement in a background goroutine. The
+// input argument is the input required by the nettest. If the nettest does
+// not take any input, use an empty string. The measurement argument is a
+// measurement returned by NewMeasurement. The code running the measurement
+// will initialize all the fields that NewMeasurement didn't initialize. The
+// code will post asynchronous events on the returned channel. The channel
+// will be closed when the measurement is complete. This function will cause
+// a panic if the nettest.Main field is not initialized.
+func (nettest *Nettest) StartMeasurement(
+	input string, measurement *model.Measurement) <-chan model.Event {
+	outch := make(chan model.Event)
+	go func() {
+		defer close(outch)
+		nettest.Main(input, measurement, outch)
+	}()
+	return outch
 }
 
 // SubmitMeasurement submits a measurement to the selected collector. It is

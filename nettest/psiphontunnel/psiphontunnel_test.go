@@ -43,7 +43,9 @@ func TestNewNettestIntegration(t *testing.T) {
 	defer nettest.CloseReport()
 	t.Logf("Report: %+v", nettest.Report)
 	measurement := nettest.NewMeasurement()
-	nettest.Measure("", &measurement)
+	for range nettest.StartMeasurement("", &measurement) {
+		// nothing
+	}
 	t.Logf("measurement: %+v", measurement)
 	err = nettest.SubmitMeasurement(&measurement)
 	if err != nil {
