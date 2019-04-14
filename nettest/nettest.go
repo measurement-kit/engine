@@ -296,9 +296,26 @@ type Nettest struct {
 	Report collector.Report
 }
 
+// getAvailableBouncers always returns one or more available bouncers. If the
+// user configured AvailableBouncers, this is what we return. Otherwise, we
+// create one or more entry represting out default choices.
+func (nettest *Nettest) getAvailableBouncers() []model.Service {
+	if len(nettest.AvailableBouncers) > 0 {
+		return nettest.AvailableBouncers
+	}
+	return []model.Service{
+		model.Service{
+			// TODO(bassosimone): once the canonical bouncer implements the
+			// bouncer spec v2.0.0, use the canonical bouncer here.
+			Address: "https://events.proteus.test.ooni.io",
+			Type:    "https",
+		},
+	}
+}
+
 // DiscoverAvailableCollectors discovers the available collectors.
 func (nettest *Nettest) DiscoverAvailableCollectors() error {
-	for _, e := range nettest.AvailableBouncers {
+	for _, e := range nettest.getAvailableBouncers() {
 		if e.Type != "https" {
 			continue
 		}
@@ -316,7 +333,7 @@ func (nettest *Nettest) DiscoverAvailableCollectors() error {
 
 // DiscoverAvailableTestHelpers discovers the available test helpers.
 func (nettest *Nettest) DiscoverAvailableTestHelpers() error {
-	for _, e := range nettest.AvailableBouncers {
+	for _, e := range nettest.getAvailableBouncers() {
 		if e.Type != "https" {
 			continue
 		}
