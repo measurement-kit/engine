@@ -1,5 +1,5 @@
-// Package psiphontunnel implements the psiphontunnel runner.
-package psiphontunnel
+// Package runner implements the psiphontunnel runner.
+package runner
 
 import (
 	"context"

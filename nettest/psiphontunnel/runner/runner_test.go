@@ -1,4 +1,4 @@
-package psiphontunnel
+package runner
 
 import (
 	"context"

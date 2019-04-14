@@ -7,7 +7,7 @@ import (
 
 	"github.com/measurement-kit/engine/model"
 	"github.com/measurement-kit/engine/nettest"
-	runner "github.com/measurement-kit/engine/runner/psiphontunnel"
+	"github.com/measurement-kit/engine/nettest/psiphontunnel/runner"
 )
 
 // Config contains the psiphontunnel nettest configuration.
