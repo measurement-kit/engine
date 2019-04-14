@@ -46,7 +46,7 @@ func (x *MKECollectorResubmitSettings) Perform() *MKECollectorResubmitResults {
 		return &out
 	}
 	var nettest nettest.Nettest
-	duration, err := internal.MakeDuration(x.Timeout)
+	duration, err := internal.MakeTimeout(x.Timeout)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot make duration: %s\n", err.Error())
 		return &out

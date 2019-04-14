@@ -45,7 +45,7 @@ type MKEGeoIPLookupSettings struct {
 // Perform performs a GeoIP lookup.
 func (x *MKEGeoIPLookupSettings) Perform() *MKEGeoIPLookupResults {
 	var out MKEGeoIPLookupResults
-	duration, err := internal.MakeDuration(x.Timeout)
+	duration, err := internal.MakeTimeout(x.Timeout)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot make duration: %s\n", err.Error())
 		return &out
