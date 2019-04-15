@@ -7,11 +7,8 @@ package bouncer
 import (
 	"context"
 	"encoding/json"
-	"errors"
-	"io/ioutil"
-	"net/http"
-	"net/url"
 
+	"github.com/measurement-kit/engine/httpx"
 	"github.com/measurement-kit/engine/model"
 )
 
@@ -43,25 +40,7 @@ func kludge(orig []model.Service) (edited []model.Service) {
 // === END PRE spec v2.0.0 CODE ===
 
 func get(ctx context.Context, config Config, path string) ([]model.Service, error) {
-	URL, err := url.Parse(config.BaseURL)
-	if err != nil {
-		return nil, err
-	}
-	URL.Path = path
-	request, err := http.NewRequest("GET", URL.String(), nil)
-	if err != nil {
-		return nil, err
-	}
-	request = request.WithContext(ctx)
-	response, err := http.DefaultClient.Do(request)
-	if err != nil {
-		return nil, err
-	}
-	if response.StatusCode != 200 {
-		return nil, errors.New("The request failed")
-	}
-	defer response.Body.Close()
-	data, err := ioutil.ReadAll(response.Body)
+	data, err := httpx.GETWithBaseURL(ctx, config.BaseURL, path)
 	if err != nil {
 		return nil, err
 	}

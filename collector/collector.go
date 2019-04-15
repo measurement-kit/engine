@@ -5,15 +5,11 @@
 package collector
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
-	"errors"
 	"fmt"
-	"io/ioutil"
-	"net/http"
-	"net/url"
 
+	"github.com/measurement-kit/engine/httpx"
 	"github.com/measurement-kit/engine/model"
 )
 
@@ -53,28 +49,6 @@ type Report struct {
 	Conf Config
 }
 
-func post(ctx context.Context, c Config, p string, b []byte) ([]byte, error) {
-	URL, err := url.Parse(c.BaseURL)
-	if err != nil {
-		return nil, err
-	}
-	URL.Path = p
-	request, err := http.NewRequest("POST", URL.String(), bytes.NewReader(b))
-	if err != nil {
-		return nil, err
-	}
-	request = request.WithContext(ctx)
-	response, err := http.DefaultClient.Do(request)
-	if err != nil {
-		return nil, err
-	}
-	if response.StatusCode != 200 {
-		return nil, errors.New("The request failed")
-	}
-	defer response.Body.Close()
-	return ioutil.ReadAll(response.Body)
-}
-
 // Open opens a new report. Returns the report on success; an error on failure.
 func Open(ctx context.Context, conf Config, rt ReportTemplate) (Report, error) {
 	report := Report{Conf: conf}
@@ -82,7 +56,7 @@ func Open(ctx context.Context, conf Config, rt ReportTemplate) (Report, error) {
 	if err != nil {
 		return report, err
 	}
-	data, err = post(ctx, conf, "/report", data)
+	data, err = httpx.POSTWithBaseURL(ctx, conf.BaseURL, "/report", data)
 	if err != nil {
 		return report, err
 	}
@@ -115,7 +89,9 @@ func (r Report) Update(ctx context.Context, m model.Measurement) (string, error)
 	if err != nil {
 		return "", err
 	}
-	data, err = post(ctx, r.Conf, fmt.Sprintf("/report/%s", r.ID), data)
+	data, err = httpx.POSTWithBaseURL(
+		ctx, r.Conf.BaseURL, fmt.Sprintf("/report/%s", r.ID), data,
+	)
 	if err != nil {
 		return "", err
 	}
@@ -129,6 +105,8 @@ func (r Report) Update(ctx context.Context, m model.Measurement) (string, error)
 
 // Close closes the report. Returns nil on success; an error on failure.
 func (r Report) Close(ctx context.Context) error {
-	_, err := post(ctx, r.Conf, fmt.Sprintf("/report/%s/close", r.ID), nil)
+	_, err := httpx.POSTWithBaseURL(
+		ctx, r.Conf.BaseURL, fmt.Sprintf("/report/%s/close", r.ID), nil,
+	)
 	return err
 }

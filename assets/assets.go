@@ -9,9 +9,10 @@ import (
 	"errors"
 	"fmt"
 	"io/ioutil"
-	"net/http"
 	"os"
 	"path/filepath"
+
+	"github.com/measurement-kit/engine/httpx"
 )
 
 type asset struct {
@@ -33,26 +34,9 @@ var allAssets = []asset{
 	},
 }
 
-func get(ctx context.Context, URL string) ([]byte, error) {
-	request, err := http.NewRequest("GET", URL, nil)
-	if err != nil {
-		return nil, err
-	}
-	request = request.WithContext(ctx)
-	response, err := http.DefaultClient.Do(request)
-	if err != nil {
-		return nil, err
-	}
-	if response.StatusCode != 200 {
-		return nil, errors.New("The request failed")
-	}
-	defer response.Body.Close()
-	return ioutil.ReadAll(response.Body)
-}
-
 func save(ctx context.Context, destdir string, asset asset) error {
 	const baseURL = `https://github.com/measurement-kit/generic-assets/releases/`
-	data, err := get(ctx, baseURL+asset.URLPath)
+	data, err := httpx.GET(ctx, baseURL+asset.URLPath)
 	if err != nil {
 		return err
 	}
