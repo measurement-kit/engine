@@ -10,6 +10,8 @@ import (
 	"net/http"
 	"net/url"
 
+	"golang.org/x/net/proxy"
+
 	"github.com/measurement-kit/engine/version"
 )
 
@@ -39,6 +41,10 @@ type Request struct {
 	// NoFailOnError controls whether an HTTP failure causes
 	// the Perform function to fail or not.
 	NoFailOnError bool
+
+	// SOCKS5ProxyPort is the optional SOCKS5 proxy port to use. The
+	// default value (zero) means no proxy is used.
+	SOCKS5ProxyPort int
 }
 
 // Response is an HTTP response
@@ -66,7 +72,20 @@ func (r Request) Perform() (*Response, error) {
 		request.Header.Set("User-Agent", r.UserAgent)
 	}
 	request = request.WithContext(r.Ctx)
-	response, err := http.DefaultClient.Do(request)
+	var client *http.Client
+	if r.SOCKS5ProxyPort != 0 {
+		// TODO(bassosimone): for correctness here we MUST make sure that
+		// this proxy implementation does not leak the DNS.
+		endpoint := fmt.Sprintf("127.0.0.1:%d", r.SOCKS5ProxyPort)
+		dialer, err := proxy.SOCKS5("tcp", endpoint, nil, proxy.Direct)
+		if err != nil {
+			return nil, err
+		}
+		client = &http.Client{Transport: &http.Transport{Dial: dialer.Dial}}
+	} else {
+		client = http.DefaultClient
+	}
+	response, err := client.Do(request)
 	if err != nil {
 		return nil, err
 	}

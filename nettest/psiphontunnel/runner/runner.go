@@ -4,17 +4,13 @@ package runner
 import (
 	"context"
 	"errors"
-	"fmt"
 	"io/ioutil"
-	"net/http"
-	"net/url"
 	"os"
 	"path/filepath"
 	"time"
 
-	"golang.org/x/net/proxy"
-
 	"github.com/Psiphon-Labs/psiphon-tunnel-core/ClientLibrary/clientlib"
+	"github.com/measurement-kit/engine/httpx"
 )
 
 // Config contains the nettest configuration.
@@ -43,11 +39,6 @@ var osRemoveAll = os.RemoveAll
 var osMkdirAll = os.MkdirAll
 var ioutilReadFile = ioutil.ReadFile
 var clientlibStartTunnel = clientlib.StartTunnel
-var urlParse = url.Parse
-var clntGet = func(clnt *http.Client, URL string) (*http.Response, error) {
-	return clnt.Get(URL)
-}
-var proxySOCKS5 = proxy.SOCKS5
 
 func processconfig(config Config) ([]byte, clientlib.Parameters, error) {
 	if config.WorkDirPath == "" {
@@ -73,25 +64,14 @@ func processconfig(config Config) ([]byte, clientlib.Parameters, error) {
 	return configJSON, params, nil
 }
 
-func usetunnel(t *clientlib.PsiphonTunnel) error {
-	// TODO(bassosimone): for correctness here we MUST make sure that
-	// this proxy implementation does not leak the DNS.
-	endpoint := fmt.Sprintf("127.0.0.1:%d", t.SOCKSProxyPort)
-	dialer, err := proxySOCKS5("tcp", endpoint, nil, proxy.Direct)
-	if err != nil {
-		return err
-	}
-	clnt := &http.Client{Transport: &http.Transport{Dial: dialer.Dial}}
-	const URL = "https://www.google.com/humans.txt"
-	response, err := clntGet(clnt, URL)
-	if err != nil {
-		return err
-	}
-	defer response.Body.Close()
-	if response.StatusCode != 200 {
-		return errors.New("HTTP status code is not 200")
-	}
-	return nil
+func usetunnel(ctx context.Context, t *clientlib.PsiphonTunnel) error {
+	_, err := httpx.Request{
+		Ctx: ctx,
+		Method: "GET",
+		URL: "https://www.google.com/humans.txt",
+		SOCKS5ProxyPort: t.SOCKSProxyPort,
+	}.Perform()
+	return err
 }
 
 // Run runs the nettest and returns the result.
@@ -110,7 +90,7 @@ func Run(ctx context.Context, config Config) Result {
 	}
 	result.BootstrapTime = time.Now().Sub(t0).Seconds()
 	defer tunnel.Stop()
-	err = usetunnel(tunnel)
+	err = usetunnel(ctx, tunnel)
 	if err != nil {
 		result.Failure = err.Error()
 		return result
