@@ -3,8 +3,6 @@ package psiphontunnel
 import (
 	"context"
 	"testing"
-
-	"github.com/measurement-kit/engine/model"
 )
 
 func TestNewNettestIntegration(t *testing.T) {
@@ -17,12 +15,6 @@ func TestNewNettestIntegration(t *testing.T) {
 	nettest.CountryDatabasePath = "../../country.mmdb.gz"
 	nettest.SoftwareName = "measurement-kit"
 	nettest.SoftwareVersion = "0.1.0"
-	nettest.AvailableBouncers = []model.Service{
-		model.Service{
-			Type:    "https",
-			Address: "https://events.proteus.test.ooni.io",
-		},
-	}
 	err := nettest.DiscoverAvailableCollectors()
 	if err != nil {
 		t.Fatal(err)

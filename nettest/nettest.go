@@ -272,7 +272,7 @@ type Nettest struct {
 	AvailableCollectors []model.Service
 
 	// AvailableTestHelpers contains all the available test helpers.
-	AvailableTestHelpers []model.Service
+	AvailableTestHelpers map[string][]model.Service
 
 	// CountryDatabasePath contains the country MMDB database path.
 	CountryDatabasePath string
@@ -305,9 +305,7 @@ func (nettest *Nettest) getAvailableBouncers() []model.Service {
 	}
 	return []model.Service{
 		model.Service{
-			// TODO(bassosimone): once the canonical bouncer implements the
-			// bouncer spec v2.0.0, use the canonical bouncer here.
-			Address: "https://events.proteus.test.ooni.io",
+			Address: "https://bouncer.ooni.io",
 			Type:    "https",
 		},
 	}
