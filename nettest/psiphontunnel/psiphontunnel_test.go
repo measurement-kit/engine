@@ -13,8 +13,8 @@ func TestNewNettestIntegration(t *testing.T) {
 		WorkDirPath:    "/tmp/",
 	}
 	nettest := NewNettest(context.Background(), config)
-	nettest.ASNDatabasePath = "../../asn.mmdb"
-	nettest.CountryDatabasePath = "../../country.mmdb"
+	nettest.ASNDatabasePath = "../../asn.mmdb.gz"
+	nettest.CountryDatabasePath = "../../country.mmdb.gz"
 	nettest.SoftwareName = "measurement-kit"
 	nettest.SoftwareVersion = "0.1.0"
 	nettest.AvailableBouncers = []model.Service{

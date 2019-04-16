@@ -12,17 +12,39 @@
 package geolookup
 
 import (
+	"compress/gzip"
 	"fmt"
+	"io/ioutil"
 	"net"
+	"os"
 
 	// oschwald is a maxmind developer, therefore I expect this package
 	// to work reasonably well even though it's not official.
 	"github.com/oschwald/maxminddb-golang"
 )
 
+// open opens a compressed database.
+func open(dbpath string) (*maxminddb.Reader, error) {
+	filep, err := os.Open(dbpath)
+	if err != nil {
+		return nil, err
+	}
+	defer filep.Close()
+	gzfilep, err := gzip.NewReader(filep)
+	if err != nil {
+		return nil, err
+	}
+	defer gzfilep.Close()
+	data, err := ioutil.ReadAll(gzfilep)
+	if err != nil {
+		return nil, err
+	}
+	return maxminddb.FromBytes(data)
+}
+
 // GetCC returns the probeCC. In case of failure, probeCC is "ZZ".
 func GetCC(dbpath, IP string) (string, error) {
-	db, err := maxminddb.Open(dbpath)
+	db, err := open(dbpath)
 	if err != nil {
 		return "ZZ", err
 	}
@@ -44,7 +66,7 @@ func GetCC(dbpath, IP string) (string, error) {
 // is "AS0", otherwise it will be "AS<number>". In case of failure, probeOrg is
 // empty, otherwise it's the commercial name of the ASN.
 func GetASN(dbpath, IP string) (string, string, error) {
-	db, err := maxminddb.Open(dbpath)
+	db, err := open(dbpath)
 	if err != nil {
 		return "AS0", "", err
 	}

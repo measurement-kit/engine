@@ -7,8 +7,8 @@ import (
 
 func TestGeoIPLookupIntegration(t *testing.T) {
 	settings := &MKEGeoIPLookupSettings{}
-	settings.ASNDatabasePath = "../asn.mmdb"
-	settings.CountryDatabasePath = "../country.mmdb"
+	settings.ASNDatabasePath = "../asn.mmdb.gz"
+	settings.CountryDatabasePath = "../country.mmdb.gz"
 	settings.Timeout = 14
 	results := settings.Perform()
 	fmt.Println(results.ProbeIP)

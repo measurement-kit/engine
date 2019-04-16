@@ -125,8 +125,8 @@
 // the ASNDatabasePath fields to point to valid and current MaxMind
 // MMDB databases; e.g.,
 //
-//     nettest.CountryDatabasePath = "country.mmdb"
-//     nettest.ASNDatabasePath = "asn.mmdb"
+//     nettest.CountryDatabasePath = "country.mmdb.gz"
+//     nettest.ASNDatabasePath = "asn.mmdb.gz"
 //
 // Then run:
 //

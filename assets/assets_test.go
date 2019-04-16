@@ -6,7 +6,7 @@ import (
 )
 
 func TestDownloadIntegration(t *testing.T) {
-	if err := Download(context.Background(), "../testdata"); err != nil {
+	if err := Download(context.Background(), ".."); err != nil {
 		t.Fatal(err)
 	}
 }

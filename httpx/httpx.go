@@ -98,9 +98,9 @@ func (r Request) Perform() (*Response, error) {
 		return nil, err
 	}
 	return &Response{
-		StatusCode: response.StatusCode,
+		StatusCode:  response.StatusCode,
 		ContentType: response.Header.Get("Content-Type"),
-		Body: data,
+		Body:        data,
 	}, nil
 }
 
@@ -112,9 +112,9 @@ func userAgent() string {
 // GET performs a GET request and returns the body.
 func GET(ctx context.Context, URL string) ([]byte, error) {
 	response, err := Request{
-		Ctx: ctx,
-		Method: "GET",
-		URL: URL,
+		Ctx:       ctx,
+		Method:    "GET",
+		URL:       URL,
 		UserAgent: userAgent(),
 	}.Perform()
 	return response.Body, err
@@ -133,10 +133,10 @@ func GETWithBaseURL(ctx context.Context, baseURL, path string) ([]byte, error) {
 // POST performs a POST request and returns the body.
 func POST(ctx context.Context, URL string, body []byte) ([]byte, error) {
 	response, err := Request{
-		Ctx: ctx,
-		Method: "POST",
-		URL: URL,
-		Body: body,
+		Ctx:       ctx,
+		Method:    "POST",
+		URL:       URL,
+		Body:      body,
 		UserAgent: userAgent(),
 	}.Perform()
 	return response.Body, err

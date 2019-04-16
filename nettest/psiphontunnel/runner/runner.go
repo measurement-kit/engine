@@ -66,9 +66,9 @@ func processconfig(config Config) ([]byte, clientlib.Parameters, error) {
 
 func usetunnel(ctx context.Context, t *clientlib.PsiphonTunnel) error {
 	_, err := httpx.Request{
-		Ctx: ctx,
-		Method: "GET",
-		URL: "https://www.google.com/humans.txt",
+		Ctx:             ctx,
+		Method:          "GET",
+		URL:             "https://www.google.com/humans.txt",
 		SOCKS5ProxyPort: t.SOCKSProxyPort,
 	}.Perform()
 	return err
