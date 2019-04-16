@@ -117,7 +117,10 @@ func GET(ctx context.Context, URL string) ([]byte, error) {
 		URL:       URL,
 		UserAgent: userAgent(),
 	}.Perform()
-	return response.Body, err
+	if err != nil {
+		return nil, err
+	}
+	return response.Body, nil
 }
 
 // GETWithBaseURL is like GET but with baseURL and path.
@@ -139,7 +142,10 @@ func POST(ctx context.Context, URL string, body []byte) ([]byte, error) {
 		Body:      body,
 		UserAgent: userAgent(),
 	}.Perform()
-	return response.Body, err
+	if err != nil {
+		return nil, err
+	}
+	return response.Body, nil
 }
 
 // POSTWithBaseURL performs a POST with a baseURL.
