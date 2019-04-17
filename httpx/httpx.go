@@ -59,6 +59,12 @@ type Response struct {
 	Body []byte
 }
 
+// ioutilReadAll allows to mock ioutil.ReadAll when testing the code.
+var ioutilReadAll = ioutil.ReadAll
+
+// proxySOCKS5 allows to mock proxy.SOCKS5 when testing the code.
+var proxySOCKS5 = proxy.SOCKS5
+
 // Perform performs an HTTP request and returns the response.
 func (r Request) Perform() (*Response, error) {
 	request, err := http.NewRequest(r.Method, r.URL, bytes.NewReader(r.Body))
@@ -77,7 +83,7 @@ func (r Request) Perform() (*Response, error) {
 		// TODO(bassosimone): for correctness here we MUST make sure that
 		// this proxy implementation does not leak the DNS.
 		endpoint := fmt.Sprintf("127.0.0.1:%d", r.SOCKS5ProxyPort)
-		dialer, err := proxy.SOCKS5("tcp", endpoint, nil, proxy.Direct)
+		dialer, err := proxySOCKS5("tcp", endpoint, nil, proxy.Direct)
 		if err != nil {
 			return nil, err
 		}
@@ -93,7 +99,7 @@ func (r Request) Perform() (*Response, error) {
 	if response.StatusCode != 200 && !r.NoFailOnError {
 		return nil, ErrRequestFailed
 	}
-	data, err := ioutil.ReadAll(response.Body)
+	data, err := ioutilReadAll(response.Body)
 	if err != nil {
 		return nil, err
 	}
