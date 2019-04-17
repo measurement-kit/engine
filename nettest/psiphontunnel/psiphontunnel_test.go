@@ -3,6 +3,8 @@ package psiphontunnel
 import (
 	"context"
 	"testing"
+
+	"github.com/apex/log"
 )
 
 func TestNewNettestIntegration(t *testing.T) {
@@ -19,29 +21,29 @@ func TestNewNettestIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("AvailableCollectors: %+v", nettest.AvailableCollectors)
+	log.Infof("AvailableCollectors: %+v", nettest.AvailableCollectors)
 	err = nettest.GeoLookup()
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("ProbeIP: %+v", nettest.ProbeIP)
-	t.Logf("ProbeASN: %+v", nettest.ProbeASN)
-	t.Logf("ProbeCC: %+v", nettest.ProbeCC)
-	t.Logf("ProbeNetworkName: %+v", nettest.ProbeNetworkName)
+	log.Infof("ProbeIP: %+v", nettest.ProbeIP)
+	log.Infof("ProbeASN: %+v", nettest.ProbeASN)
+	log.Infof("ProbeCC: %+v", nettest.ProbeCC)
+	log.Infof("ProbeNetworkName: %+v", nettest.ProbeNetworkName)
 	err = nettest.OpenReport()
 	if err != nil {
 		t.Fatal(err)
 	}
 	defer nettest.CloseReport()
-	t.Logf("Report: %+v", nettest.Report)
+	log.Infof("Report: %+v", nettest.Report)
 	measurement := nettest.NewMeasurement()
-	for range nettest.StartMeasurement("", &measurement) {
-		// nothing
+	for ev := range nettest.StartMeasurement("", &measurement) {
+		log.Infof("ev: %+v => %+v", ev.Key, ev.Value)
 	}
-	t.Logf("measurement: %+v", measurement)
+	log.Infof("measurement: %+v", measurement)
 	err = nettest.SubmitMeasurement(&measurement)
 	if err != nil {
 		t.Fatal(err)
 	}
-	t.Logf("measurementID: %+v", measurement.OOID)
+	log.Infof("measurementID: %+v", measurement.OOID)
 }

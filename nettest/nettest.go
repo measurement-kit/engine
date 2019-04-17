@@ -49,7 +49,7 @@
 //     nettest.SoftwareName = "example"
 //     nettest.SoftwareVersion = "0.0.1"
 //     nettest.TestStartTime = nettest.FormatTimeNowUTC()
-//     nettest.Main = func(input string, m *model.Measurement, ch <-chan model.Event) {
+//     nettest.Main = func(input string, m *model.Measurement, ch chan<- model.Event) {
 //       // perform measurement and initialize m
 //     }
 //
@@ -240,7 +240,7 @@ func FormatTimeNowUTC() string {
 // above for a complete list of such fields). The third argument (ch) is a
 // channel where the nettest should post asynchronous events. The runner
 // MUST NOT close the channel as it is managed by nettest.StartMeasurement.
-type MainFunc = func(input string, mstub *model.Measurement, ch <-chan model.Event)
+type MainFunc = func(input string, mstub *model.Measurement, ch chan<- model.Event)
 
 // Nettest is a nettest.
 type Nettest struct {

@@ -29,7 +29,7 @@ func NewNettest(ctx context.Context, config Config) *nettest.Nettest {
 		TestName:      "psiphontunnel",
 		TestVersion:   "0.0.1",
 		TestStartTime: nettest.FormatTimeNowUTC(),
-		Main: func(input string, m *model.Measurement, ch <-chan model.Event) {
+		Main: func(input string, m *model.Measurement, ch chan<- model.Event) {
 			t0 := time.Now()
 			m.TestKeys = runner.Run(ctx, config)
 			m.MeasurementRuntime = time.Now().Sub(t0).Seconds()
