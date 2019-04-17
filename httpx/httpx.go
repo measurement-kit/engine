@@ -134,13 +134,14 @@ func GETWithBaseURL(ctx context.Context, baseURL, path string) ([]byte, error) {
 }
 
 // POST performs a POST request and returns the body.
-func POST(ctx context.Context, URL string, body []byte) ([]byte, error) {
+func POST(ctx context.Context, URL, contentType string, body []byte) ([]byte, error) {
 	response, err := Request{
-		Ctx:       ctx,
-		Method:    "POST",
-		URL:       URL,
-		Body:      body,
-		UserAgent: userAgent(),
+		Ctx:         ctx,
+		Method:      "POST",
+		URL:         URL,
+		Body:        body,
+		ContentType: contentType,
+		UserAgent:   userAgent(),
 	}.Perform()
 	if err != nil {
 		return nil, err
@@ -149,11 +150,11 @@ func POST(ctx context.Context, URL string, body []byte) ([]byte, error) {
 }
 
 // POSTWithBaseURL performs a POST with a baseURL.
-func POSTWithBaseURL(ctx context.Context, baseURL, path string, body []byte) ([]byte, error) {
+func POSTWithBaseURL(ctx context.Context, baseURL, path, contentType string, body []byte) ([]byte, error) {
 	URL, err := url.Parse(baseURL)
 	if err != nil {
 		return nil, err
 	}
 	URL.Path = path
-	return POST(ctx, URL.String(), body)
+	return POST(ctx, URL.String(), contentType, body)
 }

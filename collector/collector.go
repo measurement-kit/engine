@@ -56,7 +56,9 @@ func Open(ctx context.Context, conf Config, rt ReportTemplate) (Report, error) {
 	if err != nil {
 		return report, err
 	}
-	data, err = httpx.POSTWithBaseURL(ctx, conf.BaseURL, "/report", data)
+	data, err = httpx.POSTWithBaseURL(
+		ctx, conf.BaseURL, "/report", "application/json", data,
+	)
 	if err != nil {
 		return report, err
 	}
@@ -90,7 +92,8 @@ func (r Report) Update(ctx context.Context, m model.Measurement) (string, error)
 		return "", err
 	}
 	data, err = httpx.POSTWithBaseURL(
-		ctx, r.Conf.BaseURL, fmt.Sprintf("/report/%s", r.ID), data,
+		ctx, r.Conf.BaseURL, fmt.Sprintf("/report/%s", r.ID),
+		"application/json", data,
 	)
 	if err != nil {
 		return "", err
@@ -106,7 +109,7 @@ func (r Report) Update(ctx context.Context, m model.Measurement) (string, error)
 // Close closes the report. Returns nil on success; an error on failure.
 func (r Report) Close(ctx context.Context) error {
 	_, err := httpx.POSTWithBaseURL(
-		ctx, r.Conf.BaseURL, fmt.Sprintf("/report/%s/close", r.ID), nil,
+		ctx, r.Conf.BaseURL, fmt.Sprintf("/report/%s/close", r.ID), "", nil,
 	)
 	return err
 }
