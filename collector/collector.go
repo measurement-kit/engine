@@ -49,10 +49,13 @@ type Report struct {
 	Conf Config
 }
 
+// jsonMarshal allows to mock json.Marshal in tests
+var jsonMarshal = json.Marshal
+
 // Open opens a new report. Returns the report on success; an error on failure.
 func Open(ctx context.Context, conf Config, rt ReportTemplate) (Report, error) {
 	report := Report{Conf: conf}
-	data, err := json.Marshal(rt)
+	data, err := jsonMarshal(rt)
 	if err != nil {
 		return report, err
 	}
@@ -79,6 +82,9 @@ type updateResponse struct {
 	ID string `json:"measurement_id"`
 }
 
+// httpxPOSTWithBaseURL simplifies life in unit tests
+var httpxPOSTWithBaseURL = httpx.POSTWithBaseURL
+
 // Update updates a report by appending a new measurement to it.
 //
 // Returns the measurement ID on success; an error on failure.
@@ -87,11 +93,11 @@ func (r Report) Update(ctx context.Context, m model.Measurement) (string, error)
 		Format:  "json",
 		Content: m,
 	}
-	data, err := json.Marshal(ureq)
+	data, err := jsonMarshal(ureq)
 	if err != nil {
 		return "", err
 	}
-	data, err = httpx.POSTWithBaseURL(
+	data, err = httpxPOSTWithBaseURL(
 		ctx, r.Conf.BaseURL, fmt.Sprintf("/report/%s", r.ID),
 		"application/json", data,
 	)

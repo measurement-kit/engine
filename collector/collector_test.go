@@ -2,6 +2,7 @@ package collector
 
 import (
 	"context"
+	"errors"
 	"testing"
 
 	"github.com/measurement-kit/engine/model"
@@ -31,6 +32,7 @@ func makeMeasurement(rt ReportTemplate, ID string) model.Measurement {
 	}
 }
 
+// TestIntegration submits a measurement.
 func TestIntegration(t *testing.T) {
 	config := Config{
 		BaseURL: "https://collector-sandbox.ooni.io",
@@ -61,4 +63,80 @@ func TestIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	t.Logf("Report %s: UPDATED (Measurement ID: %s)", report.ID, ID)
+}
+
+// TestOpenJSONMarshalError verifies that we deal with
+// JSON marshalling errors in Open.
+func TestOpenJSONMarshalError(t *testing.T) {
+	config := Config{}
+	template := ReportTemplate{}
+	savedJSONMarshal := jsonMarshal
+	mockedError := errors.New("mocked error")
+	jsonMarshal = func(v interface{}) ([]byte, error) {
+		return nil, mockedError
+	}
+	ctx := context.Background()
+	_, err := Open(ctx, config, template)
+	if err != mockedError {
+		t.Fatal("Not the error we were expecting")
+	}
+	jsonMarshal = savedJSONMarshal
+}
+
+// TestOpenHTTPError verifies that Open deals with HTTP errors.
+func TestOpenHTTPError(t *testing.T) {
+	config := Config{
+		BaseURL: "\t", // should be enough to fail httpx
+	}
+	template := ReportTemplate{}
+	_, err := Open(context.Background(), config, template)
+	if err == nil {
+		t.Fatal("We expected an error here")
+	}
+}
+
+// TestUpdateJSONMarshalError verifies that we deal with
+// JSON marshalling errors in Update.
+func TestUpdateJSONMarshalError(t *testing.T) {
+	savedJSONMarshal := jsonMarshal
+	mockedError := errors.New("mocked error")
+	jsonMarshal = func(v interface{}) ([]byte, error) {
+		return nil, mockedError
+	}
+	ctx := context.Background()
+	var r Report
+	_, err := r.Update(ctx, model.Measurement{})
+	if err != mockedError {
+		t.Fatal("Not the error we were expecting")
+	}
+	jsonMarshal = savedJSONMarshal
+}
+
+// TestUpdateHTTPError verifies that Update deals with HTTP errors.
+func TestUpdateHTTPError(t *testing.T) {
+	r := Report{
+		Conf: Config{
+			BaseURL: "\t", // should be enough to fail httpx
+		},
+	}
+	_, err := r.Update(context.Background(), model.Measurement{})
+	if err == nil {
+		t.Fatal("We expected an error here")
+	}
+}
+
+// TestUpdateJSONUnmarshalError verifies that we deal with
+// JSON unmarshalling errors in Update.
+func TestUpdateJSONUnmarshalError(t *testing.T) {
+	savedFunc := httpxPOSTWithBaseURL
+	httpxPOSTWithBaseURL = func(ctx context.Context, baseURL, path, contentType string, body []byte) ([]byte, error) {
+		return []byte("{"), nil // this is not valid JSON
+	}
+	ctx := context.Background()
+	var r Report
+	_, err := r.Update(ctx, model.Measurement{})
+	if err == nil {
+		t.Fatal("We expected an error here")
+	}
+	httpxPOSTWithBaseURL = savedFunc
 }
