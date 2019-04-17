@@ -44,10 +44,13 @@ const baseURL = `https://github.com/measurement-kit/generic-assets/releases/`
 // errSHA256Mismatch is the error returned on SHA256 mismatch.
 var errSHA256Mismatch = errors.New("SHA256 does not match expected SHA256")
 
+// httpxGET allows to test httpx.GET
+var httpxGET = httpx.GET
+
 // save saves the specified, compressed asset as filename, which is the absolute
 // file path of the asset in the destination directory.
 func save(ctx context.Context, filename string, asset asset) error {
-	data, err := httpx.GET(ctx, baseURL+asset.URLPath)
+	data, err := httpxGET(ctx, baseURL+asset.URLPath)
 	if err != nil {
 		return err
 	}
@@ -57,32 +60,58 @@ func save(ctx context.Context, filename string, asset asset) error {
 	return ioutil.WriteFile(filename, data, 0600)
 }
 
-// saveIdempotent saves the specified compressed asset in destdir only
-// if we have not downladed the same file already.
-func saveIdempotent(ctx context.Context, destdir string, asset asset) error {
-	filename := filepath.Join(destdir, filepath.Base(asset.URLPath))
-	filep, err := os.Open(filename)
+// osOpen allows to test os.Open failures
+var osOpen = os.Open
+
+// ioCopy allows to mock io.Copy in tests
+var ioCopy = io.Copy
+
+// cacheOpen attempts to open the specified asset from the cache. It will
+// return true if the file is in cache, false otherwise.
+func cacheOpen(ctx context.Context, filename string, asset asset) error {
+	filep, err := osOpen(filename)
 	if err != nil {
-		return save(ctx, filename, asset)
+		return err
 	}
 	defer filep.Close()
 	hash := sha256.New()
-	if _, err := io.Copy(hash, filep); err != nil {
-		return save(ctx, filename, asset)
+	if _, err := ioCopy(hash, filep); err != nil {
+		return err
 	}
 	if fmt.Sprintf("%x", hash.Sum(nil)) != asset.SHA256 {
-		return save(ctx, filename, asset)
+		return errors.New("SHA256 mismatch")
 	}
 	return nil
 }
 
+// mockableCacheOpen allows to mock cacheOpen in tests
+var mockableCacheOpen = cacheOpen
+
+// saveIdempotent saves the specified compressed asset in destdir only
+// if we have not downladed the same file already.
+func saveIdempotent(ctx context.Context, destdir string, asset asset) error {
+	filename := filepath.Join(destdir, filepath.Base(asset.URLPath))
+	err := mockableCacheOpen(ctx, filename, asset)
+	if err != nil {
+		// If we cannot access the file in cache, then try downloading it
+		err = save(ctx, filename, asset)
+	}
+	return err
+}
+
+// osMkdirAll allows to mock os.MkdirAll in unit tests
+var osMkdirAll = os.MkdirAll
+
+// mockableSaveIdempotent allows to mock saveIdempotent in tests
+var mockableSaveIdempotent = saveIdempotent
+
 // Download downloads assets in destdir.
 func Download(ctx context.Context, destdir string) error {
-	if err := os.MkdirAll(destdir, 0700); err != nil {
+	if err := osMkdirAll(destdir, 0700); err != nil {
 		return err
 	}
 	for _, asset := range allAssets {
-		if err := saveIdempotent(ctx, destdir, asset); err != nil {
+		if err := mockableSaveIdempotent(ctx, destdir, asset); err != nil {
 			return err
 		}
 	}
