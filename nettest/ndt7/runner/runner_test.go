@@ -6,7 +6,7 @@ import (
 	"testing"
 )
 
-func TestStartDownloadIntegration(t *testing.T) {
+func TestIntegration(t *testing.T) {
 	ctx := context.Background()
 	FQDNs, err := GetServers(ctx)
 	if err != nil {
@@ -23,14 +23,6 @@ func TestStartDownloadIntegration(t *testing.T) {
 			fmt.Printf("%+v\n", ev)
 		}
 		break
-	}
-}
-
-func TestStartUploadIntegration(t *testing.T) {
-	ctx := context.Background()
-	FQDNs, err := GetServers(ctx)
-	if err != nil {
-		t.Fatal(err)
 	}
 	for _, FQDN := range FQDNs {
 		fmt.Printf("try: %s\n", FQDN)
