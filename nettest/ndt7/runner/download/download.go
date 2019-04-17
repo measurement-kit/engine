@@ -3,15 +3,16 @@ package download
 
 import (
 	"context"
+	"encoding/json"
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/measurement-kit/engine/model"
+	"github.com/measurement-kit/engine/nettest/ndt7/runner/model"
 	"github.com/measurement-kit/engine/nettest/ndt7/runner/spec"
 )
 
 // Run runs the download subtest.
-func Run(ctx context.Context, conn *websocket.Conn, ch chan<- model.Event) {
+func Run(ctx context.Context, conn *websocket.Conn, ch chan<- model.Measurement) {
 	defer close(ch)
 	defer conn.Close()
 	wholectx, cancel := context.WithTimeout(ctx, spec.DownloadTimeout)
@@ -32,9 +33,13 @@ func Run(ctx context.Context, conn *websocket.Conn, ch chan<- model.Event) {
 		if mtype != websocket.TextMessage {
 			continue
 		}
-		ch <- model.Event{
-			Key:   "ndt7.server_download_measurement",
-			Value: spec.EventValue{JSONStr: string(mdata)},
+		var measurement model.Measurement
+		err = json.Unmarshal(mdata, &measurement)
+		if err != nil {
+			return // fail the test if we got an invalid JSON
 		}
+		measurement.Direction = model.DirectionDownload
+		measurement.Origin = model.OriginServer
+		ch <- measurement
 	}
 }

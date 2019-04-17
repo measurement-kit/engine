@@ -27,30 +27,13 @@
 //     if err != nil {
 //       return
 //     }
-//     for ev := range ch {
-//       // process event
+//     for measurement := range ch {
+//       // process measurement
 //     }
 //
 // where FQDN is the FQDN of a mlab server. If StartDownload fails, it
 // means that we could not connect to the specified server and/or upgrade
 // the connection to WebSockets using the ndt7 subprotocol.
-//
-// On success, you MUST process the events by emitted the download. These
-// events are structs of type model.Event with this structure:
-//
-//     model.Event{
-//       Key: "ndt7.server_download_measurement",
-//       Value: spec.EventValue{
-//         JSONStr: "...",
-//       },
-//     }
-//
-// where JSONStr is a serialized JSON string containing a measurement
-// event emitted by the server. The structure of this event may
-// change over time. We could provide an example here but really
-// it's more robust to just redirect you to the ndt7 spec:
-//
-// https://github.com/m-lab/ndt-server/blob/master/spec/ndt7-protocol.md
 //
 // Upload subtest
 //
@@ -60,41 +43,15 @@
 //     if err != nil {
 //       return
 //     }
-//     for ev := range ch {
-//       // process event
+//     for measurement := range ch {
+//       // process measurement
 //     }
 //
 // where FQDN is the FQDN of a mlab server. If StartUpload fails, it
 // means that we could not connect to the specified server and/or upgrade
 // the connection to WebSockets using the ndt7 subprotocol.
 //
-// On success, you must process events by the upload. The emitted
-// events are structs of type model.Event with this structure:
-//
-//     model.Event{
-//       Key: "ndt7.client_upload_measurement",
-//       Value: spec.EventValue{
-//         JSONStr: "...",
-//       },
-//     }
-//
-// where JSONStr is a serialized JSON string containing a measurement
-// event emitted by the client. The structure of this event is:
-//
-//     {
-//       "app_info": {
-//         "num_bytes": 123456,
-//       },
-//       "elapsed": 1.23456,
-//     }
-//
-// where `num_bytes` is the number of bytes uploaded so far and
-// `elapsed` is the number of seconds elapsed since the beginning
-// of the download. Note that this structure is compatible with
-// the measurement structure defined by the ndt7 specification
-// v0.7.0; see the official specification for more info:
-//
-// https://github.com/m-lab/ndt-server/blob/master/spec/ndt7-protocol.md
+// On success, you must process measurements emitted by the upload.
 package runner
 
 import (
@@ -106,8 +63,8 @@ import (
 
 	"github.com/gorilla/websocket"
 	"github.com/measurement-kit/engine/mlabns"
-	"github.com/measurement-kit/engine/model"
 	"github.com/measurement-kit/engine/nettest/ndt7/runner/download"
+	"github.com/measurement-kit/engine/nettest/ndt7/runner/model"
 	"github.com/measurement-kit/engine/nettest/ndt7/runner/spec"
 	"github.com/measurement-kit/engine/nettest/ndt7/runner/upload"
 )
@@ -157,25 +114,25 @@ func connect(ctx context.Context, FQDN, URLPath string) (*websocket.Conn, error)
 }
 
 // StartDownload starts the ndt7 download. On success returns a channel where
-// events are emitted. This channel is closed when the download ends. On
+// measurements are emitted. This channel is closed when the download ends. On
 // failure, the error is non nil and you should not attempt using the channel.
-func StartDownload(ctx context.Context, FQDN string) (<-chan model.Event, error) {
+func StartDownload(ctx context.Context, FQDN string) (<-chan model.Measurement, error) {
 	conn, err := connect(ctx, FQDN, spec.DownloadURLPath)
 	if err != nil {
 		return nil, err
 	}
-	ch := make(chan model.Event)
+	ch := make(chan model.Measurement)
 	go download.Run(ctx, conn, ch)
 	return ch, nil
 }
 
 // StartUpload is like StartDownload but for the upload.
-func StartUpload(ctx context.Context, FQDN string) (<-chan model.Event, error) {
+func StartUpload(ctx context.Context, FQDN string) (<-chan model.Measurement, error) {
 	conn, err := connect(ctx, FQDN, spec.UploadURLPath)
 	if err != nil {
 		return nil, err
 	}
-	ch := make(chan model.Event)
+	ch := make(chan model.Measurement)
 	go upload.Run(ctx, conn, ch)
 	return ch, nil
 }

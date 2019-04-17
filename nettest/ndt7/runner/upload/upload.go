@@ -3,12 +3,11 @@ package upload
 
 import (
 	"context"
-	"encoding/json"
 	"math/rand"
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/measurement-kit/engine/model"
+	"github.com/measurement-kit/engine/nettest/ndt7/runner/model"
 	"github.com/measurement-kit/engine/nettest/ndt7/runner/spec"
 )
 
@@ -49,38 +48,15 @@ func ignoreIncoming(conn *websocket.Conn) {
 	}
 }
 
-// appInfo contains an application level measurement. This message is
-// consistent with v0.7.0 of the ndt7 spec.
-type appInfo struct {
-	// NumBytes is the number of bytes transferred so far.
-	NumBytes int64 `json:"num_bytes"`
-}
-
-// The measurement struct contains measurement results. This message is
-// consistent with v0.7.0 of the ndt7 spec.
-type measurement struct {
-	// Elapsed is the number of seconds elapsed since the beginning.
-	Elapsed float64 `json:"elapsed"`
-
-	// AppInfo contains application level measurements.
-	AppInfo *appInfo `json:"app_info,omitempty"`
-}
-
 // emit emits an event during the upload.
-func emit(ch chan<- model.Event, elapsed float64, numBytes int64) {
-	measurement := measurement{
-		Elapsed: elapsed,
-		AppInfo: &appInfo{
+func emit(ch chan<- model.Measurement, elapsed float64, numBytes int64) {
+	ch <- model.Measurement{
+		AppInfo: model.AppInfo{
 			NumBytes: numBytes,
 		},
-	}
-	data, err := json.Marshal(measurement)
-	if err != nil {
-		return // should not happen in practice as all fields are serializable
-	}
-	ch <- model.Event{
-		Key:   "ndt7.client_upload_measurement",
-		Value: spec.EventValue{JSONStr: string(data)},
+		Direction: model.DirectionUpload,
+		Elapsed: elapsed,
+		Origin: model.OriginClient,
 	}
 }
 
@@ -118,7 +94,7 @@ func uploadAsync(ctx context.Context, conn *websocket.Conn) <-chan int64 {
 }
 
 // Run runs the upload subtest.
-func Run(ctx context.Context, conn *websocket.Conn, ch chan<- model.Event) {
+func Run(ctx context.Context, conn *websocket.Conn, ch chan<- model.Measurement) {
 	defer close(ch)
 	defer conn.Close()
 	go ignoreIncoming(conn)

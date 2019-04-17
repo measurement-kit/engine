@@ -1,4 +1,5 @@
-// Package spec contains ndt7 constants and data structures.
+// Package spec contains ndt7 constants. See also the ndt7 spec:
+// https://github.com/m-lab/ndt-server/blob/master/spec/ndt7-protocol.md
 package spec
 
 import (
@@ -31,12 +32,3 @@ const BulkMessageSize = 1 << 13
 
 // UpdateInterval is the interval between client side upload measurements.
 const UpdateInterval = 250 * time.Millisecond
-
-// EventValue is the value of a ndt7 event. This is the model.Event.Value value
-// that will be emitted by ndt7-generated nettest events.
-type EventValue struct {
-	// JSONStr is a serialized JSON message. See the documentation of the
-	// github.com/measurement-kit/engine/nettest/ndt7/runner package for a
-	// description of the possible values of this field.
-	JSONStr string `json:"json_str"`
-}
