@@ -57,18 +57,24 @@ func TestGetCCIntegration(t *testing.T) {
 // TestGetCCNonExistentFile checks whether GetCC will deal
 // correctly with the case where the file is missing.
 func TestGetCCNonExistentFile(t *testing.T) {
-	_, err := GetCC("../nonexistent.mmdb.gz", "8.8.8.8")
+	CC, err := GetCC("../nonexistent.mmdb.gz", "8.8.8.8")
 	if err == nil {
 		t.Fatal("We expected an error here")
+	}
+	if CC != "ZZ" {
+		t.Fatal("Not the CC we expected")
 	}
 }
 
 // TestGetCCBadIP checks whether GetCC will deal correctly with the
 // case where the input is not actually a real IP.
 func TestGetCCNonExistentIP(t *testing.T) {
-	_, err := GetCC("../country.mmdb.gz", "127.0.0")
+	CC, err := GetCC("../country.mmdb.gz", "127.0.0")
 	if err == nil {
 		t.Fatal("We expected an error here")
+	}
+	if CC != "ZZ" {
+		t.Fatal("Not the CC we expected")
 	}
 }
 
@@ -84,17 +90,23 @@ func TestGetASNIntegration(t *testing.T) {
 // TestGetASNNonExistentFile checks whether GetASN will deal
 // correctly with the case where the file is missing.
 func TestGetASNNonExistentFile(t *testing.T) {
-	_, _, err := GetASN("../nonexistent.mmdb.gz", "8.8.8.8")
+	ASN, org, err := GetASN("../nonexistent.mmdb.gz", "8.8.8.8")
 	if err == nil {
 		t.Fatal("We expected an error here")
+	}
+	if ASN != "AS0" || org != "" {
+		t.Fatal("Not the ASN or org we expected")
 	}
 }
 
 // TestGetASNBadIP checks whether GetASN will deal correctly with the
 // case where the input is not actually a real IP.
 func TestGetASNNonExistentIP(t *testing.T) {
-	_, _, err := GetASN("../asn.mmdb.gz", "127.0.0")
+	ASN, org, err := GetASN("../asn.mmdb.gz", "127.0.0")
 	if err == nil {
 		t.Fatal("We expected an error here")
+	}
+	if ASN != "AS0" || org != "" {
+		t.Fatal("Not the ASN or org we expected")
 	}
 }
