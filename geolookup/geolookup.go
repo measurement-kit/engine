@@ -14,6 +14,7 @@ package geolookup
 import (
 	"compress/gzip"
 	"fmt"
+	"io"
 	"io/ioutil"
 	"net"
 	"os"
@@ -26,6 +27,11 @@ import (
 // ioutilReadAll is a mockable ioutil.ReadAll
 var ioutilReadAll = ioutil.ReadAll
 
+// gzclose allows to verify we deal with gzip.Close errors
+var gzclose = func(c io.Closer) error {
+	return c.Close()
+}
+
 // open opens a compressed database.
 func open(dbpath string) (*maxminddb.Reader, error) {
 	filep, err := os.Open(dbpath)
@@ -37,8 +43,14 @@ func open(dbpath string) (*maxminddb.Reader, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer gzfilep.Close()
+	// Implementation note: don't discard gzip.Close return value since
+	// it may actually indicate that the file is corrupted.
 	data, err := ioutilReadAll(gzfilep)
+	if err != nil {
+		gzclose(gzfilep)
+		return nil, err
+	}
+	err = gzclose(gzfilep)
 	if err != nil {
 		return nil, err
 	}

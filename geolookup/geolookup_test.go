@@ -30,6 +30,21 @@ func TestOpenIoutilReadAllError(t *testing.T) {
 	ioutilReadAll = savedFunc
 }
 
+// TestOpenGzCloseError checks whether we correctly deal with an
+// error when we're closing the input gzip stream.
+func TestOpenGzCloseError(t *testing.T) {
+	savedFunc := gzclose
+	mockedError := errors.New("mocked error")
+	gzclose = func(r io.Closer) error {
+		return mockedError
+	}
+	_, err := open("../asn.mmdb.gz")
+	if err != mockedError {
+		t.Fatal("Not the error we were expecting")
+	}
+	gzclose = savedFunc
+}
+
 // TestGetCCIntegration tests the common CC-lookup case.
 func TestGetCCIntegration(t *testing.T) {
 	probeCC, err := GetCC("../country.mmdb.gz", "8.8.8.8")
