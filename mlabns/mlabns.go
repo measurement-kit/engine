@@ -24,6 +24,9 @@ type Server struct {
 	FQDN string `json:"fqdn"`
 }
 
+// httpGET allows mocking httpx.GET
+var httpxGET = httpx.GET
+
 // GeoOptions returns some nearby mlab servers.
 func GeoOptions(ctx context.Context, config Config) ([]Server, error) {
 	if config.BaseURL == "" {
@@ -37,7 +40,7 @@ func GeoOptions(ctx context.Context, config Config) ([]Server, error) {
 	query := URL.Query()
 	query.Add("policy", "geo_options")
 	URL.RawQuery = query.Encode()
-	data, err := httpx.GET(ctx, URL.String())
+	data, err := httpxGET(ctx, URL.String())
 	if err != nil {
 		return nil, err
 	}
