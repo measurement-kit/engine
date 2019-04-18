@@ -23,6 +23,9 @@ import (
 	"github.com/oschwald/maxminddb-golang"
 )
 
+// ioutilReadAll is a mockable ioutil.ReadAll
+var ioutilReadAll = ioutil.ReadAll
+
 // open opens a compressed database.
 func open(dbpath string) (*maxminddb.Reader, error) {
 	filep, err := os.Open(dbpath)
@@ -35,7 +38,7 @@ func open(dbpath string) (*maxminddb.Reader, error) {
 		return nil, err
 	}
 	defer gzfilep.Close()
-	data, err := ioutil.ReadAll(gzfilep)
+	data, err := ioutilReadAll(gzfilep)
 	if err != nil {
 		return nil, err
 	}
