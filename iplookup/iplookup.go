@@ -15,9 +15,12 @@ type response struct {
 	IP      string   `xml:"Ip"`
 }
 
+// httpxGET allows mocking httpx.GET
+var httpxGET = httpx.GET
+
 // Perform lookups the probeIP. On failure, probeIP is set to "127.0.0.1".
 func Perform(ctx context.Context) (string, error) {
-	data, err := httpx.GET(ctx, "https://geoip.ubuntu.com/lookup")
+	data, err := httpxGET(ctx, "https://geoip.ubuntu.com/lookup")
 	if err != nil {
 		return "127.0.0.1", err
 	}
