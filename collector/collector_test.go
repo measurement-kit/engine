@@ -35,7 +35,7 @@ func makeMeasurement(rt ReportTemplate, ID string) model.Measurement {
 // TestIntegration submits a measurement.
 func TestIntegration(t *testing.T) {
 	config := Config{
-		BaseURL: "https://collector-sandbox.ooni.io",
+		BaseURL: "https://b.collector.ooni.io",
 	}
 	template := ReportTemplate{
 		ProbeASN:        "AS0",
