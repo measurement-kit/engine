@@ -7,8 +7,8 @@ import (
 
 	"github.com/measurement-kit/engine/model"
 	"github.com/measurement-kit/engine/nettest"
-	ndt7model "github.com/measurement-kit/engine/nettest/ndt7/runner/model"
 	"github.com/measurement-kit/engine/nettest/ndt7/runner"
+	ndt7model "github.com/measurement-kit/engine/nettest/ndt7/runner/model"
 )
 
 // Config contains the ndt7 nettest configuration.
@@ -58,10 +58,19 @@ type results struct {
 	UploadResults []subtestResults `json:"upload_results"`
 }
 
+// mockableGetservers is a mockable getservers
+var mockableGetservers = getservers
+
+// runnerStartDownload is a mockable runner.StartDownload
+var runnerStartDownload = runner.StartDownload
+
+// runnerStartUpload is a mockable runner.StartUpload
+var runnerStartUpload = runner.StartUpload
+
 // run runs the ndt7 test.
 func run(ctx context.Context, config Config, out chan<- model.Event) results {
 	var results results
-	FQDNs, err := getservers(ctx, config)
+	FQDNs, err := mockableGetservers(ctx, config)
 	if err != nil {
 		results.GetServersResults.Failure = err.Error()
 		return results
@@ -70,7 +79,7 @@ func run(ctx context.Context, config Config, out chan<- model.Event) results {
 	for _, FQDN := range FQDNs {
 		var sr subtestResults
 		sr.Server = FQDN
-		in, err := runner.StartDownload(ctx, FQDN)
+		in, err := runnerStartDownload(ctx, FQDN)
 		if err != nil {
 			sr.Failure = err.Error()
 			results.DownloadResults = append(results.DownloadResults, sr)
@@ -84,7 +93,7 @@ func run(ctx context.Context, config Config, out chan<- model.Event) results {
 		break
 	}
 	for _, FQDN := range FQDNs {
-		in, err := runner.StartUpload(ctx, FQDN)
+		in, err := runnerStartUpload(ctx, FQDN)
 		var sr subtestResults
 		sr.Server = FQDN
 		if err != nil {
