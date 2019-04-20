@@ -35,10 +35,14 @@ type Result struct {
 	BootstrapTime float64 `json:"bootstrap_time"`
 }
 
+// osRemoveAll is a mockable os.RemoveAll
 var osRemoveAll = os.RemoveAll
+
+// osMkdirAll is a mockable os.MkdirAll
 var osMkdirAll = os.MkdirAll
+
+// ioutilReadFile is a mockable ioutil.ReadFile
 var ioutilReadFile = ioutil.ReadFile
-var clientlibStartTunnel = clientlib.StartTunnel
 
 func processconfig(config Config) ([]byte, clientlib.Parameters, error) {
 	if config.WorkDirPath == "" {
@@ -74,6 +78,12 @@ func usetunnel(ctx context.Context, t *clientlib.PsiphonTunnel) error {
 	return err
 }
 
+// clientlibStartTunnel is a mockable clientlib.StartTunnel
+var clientlibStartTunnel = clientlib.StartTunnel
+
+// mockableUsetunnel is mockable usetunnel
+var mockableUsetunnel = usetunnel
+
 // Run runs the nettest and returns the result.
 func Run(ctx context.Context, config Config) Result {
 	var result Result
@@ -90,7 +100,7 @@ func Run(ctx context.Context, config Config) Result {
 	}
 	result.BootstrapTime = time.Now().Sub(t0).Seconds()
 	defer tunnel.Stop()
-	err = usetunnel(ctx, tunnel)
+	err = mockableUsetunnel(ctx, tunnel)
 	if err != nil {
 		result.Failure = err.Error()
 		return result
