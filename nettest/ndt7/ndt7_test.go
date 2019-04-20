@@ -100,7 +100,7 @@ func TestRunRunnerStartDownloadFailure(t *testing.T) {
 	ctx := context.Background()
 	config := Config{
 		FQDNs: []string{
-			"ndd-iupui.mlab4.mil03.measurement-lab.org",
+			"ndd-iupui-mlab4-mil03.measurement-lab.org",
 		},
 	}
 	out := make(chan<- model.Event)
@@ -131,7 +131,7 @@ func TestRunRunnerStartUploadFailure(t *testing.T) {
 	ctx := context.Background()
 	config := Config{
 		FQDNs: []string{
-			"ndd-iupui.mlab4.mil03.measurement-lab.org",
+			"ndd-iupui-mlab4-mil03.measurement-lab.org",
 		},
 	}
 	out := make(chan<- model.Event)
