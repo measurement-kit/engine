@@ -355,6 +355,9 @@ func (nettest *Nettest) DiscoverAvailableTestHelpers() error {
 	return errors.New("Cannot discover available test helpers")
 }
 
+// ErrNoDatabasesPath indicates that the MMDB databases path are not specified.
+var ErrNoDatabasesPath = errors.New("unspecified ASN and/or country path")
+
 // GeoLookup performs the geolookup (probe_ip, probe_asn, etc.)
 func (nettest *Nettest) GeoLookup() error {
 	nettest.ProbeIP = "127.0.0.1"
@@ -362,7 +365,7 @@ func (nettest *Nettest) GeoLookup() error {
 	nettest.ProbeCC = "ZZ"
 	nettest.ProbeNetworkName = ""
 	if nettest.ASNDatabasePath == "" || nettest.CountryDatabasePath == "" {
-		return errors.New("unspecified ASN and/or country path")
+		return ErrNoDatabasesPath
 	}
 	var err, other error
 	nettest.ProbeIP, other = iplookup.Perform(nettest.Ctx)
