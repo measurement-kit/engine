@@ -140,6 +140,18 @@
 // "ZZ", and "". Not setting the country and/or the ASN database path
 // will cause GeoLookup to fail and return an error.
 //
+// Resolver lookup
+//
+// The resolver lookup step discovers the resolver IP. Run:
+//
+//     err = nettest.ResolverLookup()
+//     if err != nil {
+//       return
+//     }
+//
+// The result will be saved in nettest.ResolverIP. In case of
+// error this function will set the ResolverIP to 127.0.0.1.
+//
 // Opening a report
 //
 // This is required to submit measurements to a collector. Run:
@@ -230,6 +242,7 @@ import (
 	"github.com/measurement-kit/engine/geolookup"
 	"github.com/measurement-kit/engine/iplookup"
 	"github.com/measurement-kit/engine/model"
+	"github.com/measurement-kit/engine/resolverlookup"
 )
 
 // DateFormat is the format used by OONI for dates inside reports.
@@ -299,6 +312,9 @@ type Nettest struct {
 
 	// ProbeNetworkName contains the probe network name.
 	ProbeNetworkName string
+
+	// ResolverIP is the resolver's IP.
+	ResolverIP string
 
 	// Report is the report bound to this nettest.
 	Report collector.Report
@@ -385,6 +401,16 @@ func (nettest *Nettest) GeoLookup() error {
 		err = other
 	}
 	return err
+}
+
+// ResolverLookup discovers the resolver's IP address.
+func (nettest *Nettest) ResolverLookup() error {
+	ip, err := resolverlookup.Perform(nettest.Ctx)
+	if err != nil {
+		return err
+	}
+	nettest.ResolverIP = ip
+	return nil
 }
 
 // openReport is the internal function that open a report.
