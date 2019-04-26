@@ -26,14 +26,20 @@ type asset struct {
 	SHA256 string
 }
 
+// asnDatbaseName is the ASN database name
+var asnDatabaseName = "asn.mmdb.gz"
+
+// countryDatabaseName is the country database name.
+var countryDatabaseName = "country.mmdb.gz"
+
 // allAssets describes all assets that we could download.
 var allAssets = []asset{
 	asset{
-		URLPath: "download/20190327/asn.mmdb.gz",
+		URLPath: "download/20190327/" + asnDatabaseName,
 		SHA256:  "6fcae12937b383e1f067e14d1eb728a75a360279df8240517ac70ef6d401c2be",
 	},
 	asset{
-		URLPath: "download/20190327/country.mmdb.gz",
+		URLPath: "download/20190327/" + countryDatabaseName,
 		SHA256:  "d0a499d15506c54111217f30af9dfd11476ded076c55a3e28a73715c890b5d66",
 	},
 }
@@ -116,4 +122,14 @@ func Download(ctx context.Context, destdir string) error {
 		}
 	}
 	return nil
+}
+
+// ASNDatabasePath returns the ASN database path.
+func ASNDatabasePath(destdir string) string {
+	return filepath.Join(destdir, asnDatabaseName)
+}
+
+// CountryDatabasePath returns the country database path.
+func CountryDatabasePath(destdir string) string {
+	return filepath.Join(destdir, countryDatabaseName)
 }
