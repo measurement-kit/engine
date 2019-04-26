@@ -137,7 +137,8 @@
 //
 // This will fill the nettest.Probe{IP,ASN,CC,NetworkName} fields. On
 // error they will be initialized, respectively, to "127.0.0.1", "AS0",
-// "ZZ", and "".
+// "ZZ", and "". Not setting the country and/or the ASN database path
+// will cause GeoLookup to fail and return an error.
 //
 // Opening a report
 //
@@ -349,6 +350,13 @@ func (nettest *Nettest) DiscoverAvailableTestHelpers() error {
 
 // GeoLookup performs the geolookup (probe_ip, probe_asn, etc.)
 func (nettest *Nettest) GeoLookup() error {
+	nettest.ProbeIP = "127.0.0.1"
+	nettest.ProbeASN = "AS0"
+	nettest.ProbeCC = "ZZ"
+	nettest.ProbeNetworkName = ""
+	if nettest.ASNDatabasePath == "" || nettest.CountryDatabasePath == "" {
+		return errors.New("unspecified ASN and/or country path")
+	}
 	var err, other error
 	nettest.ProbeIP, other = iplookup.Perform(nettest.Ctx)
 	if other != nil && err == nil {
