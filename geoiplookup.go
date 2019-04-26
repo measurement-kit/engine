@@ -1,4 +1,4 @@
-package mobile
+package engine
 
 import (
 	"context"
@@ -6,11 +6,10 @@ import (
 
 	"github.com/measurement-kit/engine/geolookup"
 	"github.com/measurement-kit/engine/iplookup"
-	"github.com/measurement-kit/engine/mobile/internal"
 )
 
-// MKEGeoIPLookupResults contains the results of a GeoIP lookup.
-type MKEGeoIPLookupResults struct {
+// GeoIPLookupResults contains the results of a GeoIP lookup.
+type GeoIPLookupResults struct {
 	// Good indicates whether we succeded.
 	Good bool
 
@@ -30,8 +29,8 @@ type MKEGeoIPLookupResults struct {
 	Logs string
 }
 
-// MKEGeoIPLookupSettings contains the GeoIP lookup settings.
-type MKEGeoIPLookupSettings struct {
+// GeoIPLookupSettings contains the GeoIP lookup settings.
+type GeoIPLookupSettings struct {
 	// Timeout is the number of seconds after which we abort.
 	Timeout int64
 
@@ -43,9 +42,9 @@ type MKEGeoIPLookupSettings struct {
 }
 
 // Perform performs a GeoIP lookup.
-func (x *MKEGeoIPLookupSettings) Perform() *MKEGeoIPLookupResults {
-	var out MKEGeoIPLookupResults
-	duration, err := internal.MakeTimeout(x.Timeout)
+func (x *GeoIPLookupSettings) Perform() *GeoIPLookupResults {
+	var out GeoIPLookupResults
+	duration, err := makeTimeout(x.Timeout)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot make duration: %s\n", err.Error())
 		return &out

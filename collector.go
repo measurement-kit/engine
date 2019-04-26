@@ -1,19 +1,17 @@
-// Package mobile contains the mobile API
-package mobile
+package engine
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 
-	"github.com/measurement-kit/engine/mobile/internal"
 	"github.com/measurement-kit/engine/model"
 	"github.com/measurement-kit/engine/nettest"
 )
 
-// MKECollectorResubmitResults contains the results of resubmitting
+// CollectorResubmitResults contains the results of resubmitting
 // a measurement to the OONI collector.
-type MKECollectorResubmitResults struct {
+type CollectorResubmitResults struct {
 	// Good indicates whether we succeded or not.
 	Good bool
 
@@ -24,9 +22,9 @@ type MKECollectorResubmitResults struct {
 	Logs string
 }
 
-// MKECollectorResubmitSettings contains settings indicating how to
+// CollectorResubmitSettings contains settings indicating how to
 // resubmit a specific OONI measurement.
-type MKECollectorResubmitSettings struct {
+type CollectorResubmitSettings struct {
 	// SerializedMeasurement is the measurement to resubmit.
 	SerializedMeasurement string
 
@@ -35,10 +33,10 @@ type MKECollectorResubmitSettings struct {
 }
 
 // Perform resubmits a measurement and returns the results.
-func (x *MKECollectorResubmitSettings) Perform() *MKECollectorResubmitResults {
+func (x *CollectorResubmitSettings) Perform() *CollectorResubmitResults {
 	// Implementation note: here we basically run the normal nettest workflow
 	// except that the measurement result is known ahead of time.
-	var out MKECollectorResubmitResults
+	var out CollectorResubmitResults
 	var measurement model.Measurement
 	err := json.Unmarshal([]byte(x.SerializedMeasurement), &measurement)
 	if err != nil {
@@ -46,7 +44,7 @@ func (x *MKECollectorResubmitSettings) Perform() *MKECollectorResubmitResults {
 		return &out
 	}
 	var nettest nettest.Nettest
-	duration, err := internal.MakeTimeout(x.Timeout)
+	duration, err := makeTimeout(x.Timeout)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot make duration: %s\n", err.Error())
 		return &out

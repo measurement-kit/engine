@@ -1,4 +1,4 @@
-package mobile
+package engine
 
 import (
 	"fmt"
@@ -26,7 +26,7 @@ const origMeasurement = `{
 }`
 
 func TestCollectorResubmitIntegration(t *testing.T) {
-	settings := &MKECollectorResubmitSettings{}
+	settings := &CollectorResubmitSettings{}
 	settings.SerializedMeasurement = origMeasurement
 	settings.Timeout = 14
 	results := settings.Perform()
