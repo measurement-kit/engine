@@ -4,7 +4,6 @@ package httpx
 import (
 	"bytes"
 	"context"
-	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
@@ -14,9 +13,6 @@ import (
 
 	"github.com/measurement-kit/engine/version"
 )
-
-// ErrRequestFailed indicates that a request failed.
-var ErrRequestFailed = errors.New("The HTTP request failed")
 
 // Request is an HTTP request.
 type Request struct {
@@ -65,8 +61,7 @@ var ioutilReadAll = ioutil.ReadAll
 // proxySOCKS5 allows to mock proxy.SOCKS5 when testing the code.
 var proxySOCKS5 = proxy.SOCKS5
 
-// Perform performs an HTTP request and returns the response.
-func (r Request) Perform() (*Response, error) {
+func (r Request) perform() (*Response, error) {
 	request, err := http.NewRequest(r.Method, r.URL, bytes.NewReader(r.Body))
 	if err != nil {
 		return nil, err
@@ -97,7 +92,9 @@ func (r Request) Perform() (*Response, error) {
 	}
 	defer response.Body.Close()
 	if response.StatusCode != 200 && !r.NoFailOnError {
-		return nil, ErrRequestFailed
+		return nil, fmt.Errorf(
+			"Request failed with status %d", response.StatusCode,
+		)
 	}
 	data, err := ioutilReadAll(response.Body)
 	if err != nil {
@@ -108,6 +105,17 @@ func (r Request) Perform() (*Response, error) {
 		ContentType: response.Header.Get("Content-Type"),
 		Body:        data,
 	}, nil
+}
+
+// Perform performs an HTTP request and returns the response.
+func (r Request) Perform() (*Response, error) {
+	response, err := r.perform()
+	if err != nil {
+		return nil, fmt.Errorf(
+			"%s %s failed: %s", r.Method, r.URL, err.Error(),
+		)
+	}
+	return response, nil
 }
 
 // userAgent creates the user agent string
