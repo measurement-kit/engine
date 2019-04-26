@@ -5,8 +5,8 @@ import (
 	"encoding/json"
 	"fmt"
 
-	"github.com/measurement-kit/engine/model"
-	"github.com/measurement-kit/engine/nettest"
+	"github.com/measurement-kit/engine/internal/model"
+	"github.com/measurement-kit/engine/internal/nettest"
 )
 
 // CollectorResubmitResults contains the results of resubmitting

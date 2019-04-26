@@ -4,8 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/measurement-kit/engine/geolookup"
-	"github.com/measurement-kit/engine/iplookup"
+	"github.com/measurement-kit/engine/internal/geolookup"
+	"github.com/measurement-kit/engine/internal/iplookup"
 )
 
 // GeoIPLookupResults contains the results of a GeoIP lookup.

@@ -7,7 +7,7 @@ import (
 	"errors"
 	"net"
 
-	"github.com/measurement-kit/engine/httpx"
+	"github.com/measurement-kit/engine/internal/httpx"
 )
 
 type response struct {

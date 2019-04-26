@@ -5,9 +5,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/measurement-kit/engine/model"
-	"github.com/measurement-kit/engine/nettest"
-	"github.com/measurement-kit/engine/nettest/psiphontunnel/runner"
+	"github.com/measurement-kit/engine/internal/model"
+	"github.com/measurement-kit/engine/internal/nettest"
+	"github.com/measurement-kit/engine/internal/nettest/psiphontunnel/runner"
 )
 
 // Config contains the psiphontunnel nettest configuration.

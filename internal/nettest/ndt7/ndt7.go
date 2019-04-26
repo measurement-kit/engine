@@ -5,10 +5,10 @@ import (
 	"context"
 	"time"
 
-	"github.com/measurement-kit/engine/model"
-	"github.com/measurement-kit/engine/nettest"
-	"github.com/measurement-kit/engine/nettest/ndt7/runner"
-	ndt7model "github.com/measurement-kit/engine/nettest/ndt7/runner/model"
+	"github.com/measurement-kit/engine/internal/model"
+	"github.com/measurement-kit/engine/internal/nettest"
+	"github.com/measurement-kit/engine/internal/nettest/ndt7/runner"
+	ndt7model "github.com/measurement-kit/engine/internal/nettest/ndt7/runner/model"
 )
 
 // Config contains the ndt7 nettest configuration.

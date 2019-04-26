@@ -62,11 +62,11 @@ import (
 	"strings"
 
 	"github.com/gorilla/websocket"
-	"github.com/measurement-kit/engine/mlabns"
-	"github.com/measurement-kit/engine/nettest/ndt7/runner/download"
-	"github.com/measurement-kit/engine/nettest/ndt7/runner/model"
-	"github.com/measurement-kit/engine/nettest/ndt7/runner/spec"
-	"github.com/measurement-kit/engine/nettest/ndt7/runner/upload"
+	"github.com/measurement-kit/engine/internal/mlabns"
+	"github.com/measurement-kit/engine/internal/nettest/ndt7/runner/download"
+	"github.com/measurement-kit/engine/internal/nettest/ndt7/runner/model"
+	"github.com/measurement-kit/engine/internal/nettest/ndt7/runner/spec"
+	"github.com/measurement-kit/engine/internal/nettest/ndt7/runner/upload"
 )
 
 // ErrNoAvailableServers is returned when there are no available servers. A

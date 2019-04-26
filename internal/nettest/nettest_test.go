@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/measurement-kit/engine/model"
+	"github.com/measurement-kit/engine/internal/model"
 )
 
 // TestDiscoverAvailableCollectorsIntegration discovers available collectors.

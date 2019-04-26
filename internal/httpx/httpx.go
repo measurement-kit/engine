@@ -11,7 +11,7 @@ import (
 
 	"golang.org/x/net/proxy"
 
-	"github.com/measurement-kit/engine/version"
+	"github.com/measurement-kit/engine/internal/version"
 )
 
 // Request is an HTTP request.

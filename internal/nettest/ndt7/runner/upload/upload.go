@@ -7,8 +7,8 @@ import (
 	"time"
 
 	"github.com/gorilla/websocket"
-	"github.com/measurement-kit/engine/nettest/ndt7/runner/model"
-	"github.com/measurement-kit/engine/nettest/ndt7/runner/spec"
+	"github.com/measurement-kit/engine/internal/nettest/ndt7/runner/model"
+	"github.com/measurement-kit/engine/internal/nettest/ndt7/runner/spec"
 )
 
 // makePreparedMessage generates a prepared message that should be sent

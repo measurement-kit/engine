@@ -8,8 +8,8 @@ import (
 	"context"
 	"encoding/json"
 
-	"github.com/measurement-kit/engine/httpx"
-	"github.com/measurement-kit/engine/model"
+	"github.com/measurement-kit/engine/internal/httpx"
+	"github.com/measurement-kit/engine/internal/model"
 )
 
 // Config contains the bouncer configuration.

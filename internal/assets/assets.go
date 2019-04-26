@@ -11,7 +11,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/measurement-kit/engine/httpx"
+	"github.com/measurement-kit/engine/internal/httpx"
 )
 
 // asset is an asset that we can download. Assets are published at the

@@ -10,7 +10,7 @@ import (
 	"time"
 
 	"github.com/Psiphon-Labs/psiphon-tunnel-core/ClientLibrary/clientlib"
-	"github.com/measurement-kit/engine/httpx"
+	"github.com/measurement-kit/engine/internal/httpx"
 )
 
 // Config contains the nettest configuration.

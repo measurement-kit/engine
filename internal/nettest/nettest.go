@@ -237,12 +237,12 @@ import (
 	"errors"
 	"time"
 
-	"github.com/measurement-kit/engine/bouncer"
-	"github.com/measurement-kit/engine/collector"
-	"github.com/measurement-kit/engine/geolookup"
-	"github.com/measurement-kit/engine/iplookup"
-	"github.com/measurement-kit/engine/model"
-	"github.com/measurement-kit/engine/resolverlookup"
+	"github.com/measurement-kit/engine/internal/bouncer"
+	"github.com/measurement-kit/engine/internal/collector"
+	"github.com/measurement-kit/engine/internal/geolookup"
+	"github.com/measurement-kit/engine/internal/iplookup"
+	"github.com/measurement-kit/engine/internal/model"
+	"github.com/measurement-kit/engine/internal/resolverlookup"
 )
 
 // DateFormat is the format used by OONI for dates inside reports.

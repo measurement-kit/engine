@@ -9,10 +9,10 @@ import (
 	"sync"
 	"sync/atomic"
 
-	"github.com/measurement-kit/engine/assets"
-	"github.com/measurement-kit/engine/model"
-	"github.com/measurement-kit/engine/nettest"
-	"github.com/measurement-kit/engine/nettest/psiphontunnel"
+	"github.com/measurement-kit/engine/internal/assets"
+	"github.com/measurement-kit/engine/internal/model"
+	"github.com/measurement-kit/engine/internal/nettest"
+	"github.com/measurement-kit/engine/internal/nettest/psiphontunnel"
 )
 
 type taskAccounting struct {

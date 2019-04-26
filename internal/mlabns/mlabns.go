@@ -6,7 +6,7 @@ import (
 	"encoding/json"
 	"net/url"
 
-	"github.com/measurement-kit/engine/httpx"
+	"github.com/measurement-kit/engine/internal/httpx"
 )
 
 // Config contains mlabns settings.

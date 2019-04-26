@@ -6,8 +6,8 @@ import (
 	"testing"
 
 	"github.com/apex/log"
-	"github.com/measurement-kit/engine/model"
-	ndt7model "github.com/measurement-kit/engine/nettest/ndt7/runner/model"
+	"github.com/measurement-kit/engine/internal/model"
+	ndt7model "github.com/measurement-kit/engine/internal/nettest/ndt7/runner/model"
 )
 
 // TestGetserversCustomFQDNs checks whether we can configure
