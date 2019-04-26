@@ -53,9 +53,11 @@ func TestNewNettestIntegration(t *testing.T) {
 	log.Infof("ProbeASN: %+v", nettest.ProbeASN)
 	log.Infof("ProbeCC: %+v", nettest.ProbeCC)
 	log.Infof("ProbeNetworkName: %+v", nettest.ProbeNetworkName)
-	err = nettest.OpenReport()
-	if err != nil {
-		t.Fatal(err)
+	for err := range nettest.OpenReport() {
+		log.Warnf("OpenReport: %+v", err)
+	}
+	if nettest.Report.ID == "" {
+		t.Fatal("OpenReport: failed")
 	}
 	defer nettest.CloseReport()
 	log.Infof("Report: %+v", nettest.Report)

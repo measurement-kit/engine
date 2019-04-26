@@ -144,17 +144,24 @@
 //
 // This is required to submit measurements to a collector. Run:
 //
-//     err = nettest.OpenReport()
-//     if err != nil {
-//       return
+//     for err := range nettest.OpenReport() {
+//       if err != nil {
+//         // warn and inform the user
+//       }
 //     }
-//     defer nettest.CloseReport()
+//     if nettest.Report.ID != "" {
+//       defer nettest.CloseReport()
+//     } else {
+//       // warn and inform user
+//     }
 //
 // This will attempt to open a report with all the available collectors
-// and fail if all of them fail. On success, it will initialize the
-// nettest.Report.ID field. If this field is already initialized, this
-// step will fail. This means, among other things, that you can only open
-// a report once.
+// and post on the returned channel each failed attempt. In case of
+// success, the channel will be immediately closed without returning
+// any error. In case all available collectors failed, the channel
+// will also be closed. Distinguish the two cases by checking whether
+// a report.ID has been configured. Note that calling OpenReport
+// when a report.ID has already been configured is a no-op.
 //
 // Creating a new measurement
 //
@@ -377,10 +384,11 @@ func (nettest *Nettest) GeoLookup() error {
 	return err
 }
 
-// OpenReport opens a new report for the nettest.
-func (nettest *Nettest) OpenReport() error {
+// openReport is the internal function that open a report.
+func (nettest *Nettest) openReport(out chan<- error) {
+	defer close(out)
 	if nettest.Report.ID != "" {
-		return errors.New("Report is already open")
+		return
 	}
 	for _, e := range nettest.AvailableCollectors {
 		if e.Type != "https" {
@@ -397,12 +405,19 @@ func (nettest *Nettest) OpenReport() error {
 			TestVersion:     nettest.TestVersion,
 		})
 		if err != nil {
+			out <- err
 			continue
 		}
 		nettest.Report = report
-		return nil
+		return
 	}
-	return errors.New("Cannot open report")
+}
+
+// OpenReport opens a new report for the nettest.
+func (nettest *Nettest) OpenReport() <-chan error {
+	out := make(chan error)
+	go nettest.openReport(out)
+	return out
 }
 
 // NewMeasurement returns a new measurement for this nettest. You should

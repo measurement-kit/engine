@@ -64,9 +64,11 @@ func (x *MKECollectorResubmitSettings) Perform() *MKECollectorResubmitResults {
 		out.Logs = fmt.Sprintf("cannot discover collectors: %s\n", err.Error())
 		return &out
 	}
-	err = nettest.OpenReport()
-	if err != nil {
-		out.Logs = fmt.Sprintf("cannot open report: %s\n", err.Error())
+	for err := range nettest.OpenReport() {
+		out.Logs += fmt.Sprintf("cannot open report: %s\n", err.Error())
+	}
+	if nettest.Report.ID == "" {
+		out.Logs += fmt.Sprintf("empty report ID, assuming failure\n")
 		return &out
 	}
 	defer nettest.CloseReport()
