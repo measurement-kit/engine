@@ -52,21 +52,39 @@ type Report struct {
 // jsonMarshal allows to mock json.Marshal in tests
 var jsonMarshal = json.Marshal
 
-// Open opens a new report. Returns the report on success; an error on failure.
-func Open(ctx context.Context, conf Config, rt ReportTemplate) (Report, error) {
+func open(ctx context.Context, conf Config, rt ReportTemplate) (Report, error) {
 	report := Report{Conf: conf}
-	data, err := jsonMarshal(rt)
+	requestData, err := jsonMarshal(rt)
 	if err != nil {
 		return report, err
 	}
-	data, err = httpx.POSTWithBaseURL(
-		ctx, conf.BaseURL, "/report", "application/json", data,
+	responseData, err := httpx.POSTWithBaseURL(
+		ctx, conf.BaseURL, "/report", "application/json", requestData,
 	)
 	if err != nil {
-		return report, err
+		return report, fmt.Errorf("request with body '%s' has failed: %s",
+			string(requestData), err.Error(),
+		)
 	}
-	err = json.Unmarshal(data, &report)
+	err = json.Unmarshal(responseData, &report)
+	if err != nil {
+		return report, fmt.Errorf(
+			"cannot parse JSON returned by server: %s",
+			err.Error(),
+		)
+	}
 	return report, err
+}
+
+// Open opens a new report. Returns the report on success; an error on failure.
+func Open(ctx context.Context, conf Config, rt ReportTemplate) (Report, error) {
+	report, err := open(ctx, conf, rt)
+	if err != nil {
+		return report, fmt.Errorf(
+			"Opening report failed: %s", err.Error(),
+		)
+	}
+	return report, nil
 }
 
 type updateRequest struct {
