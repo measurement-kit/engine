@@ -41,10 +41,10 @@ type GeoIPLookupSettings struct {
 	CountryDatabasePath string
 }
 
-// Perform performs a GeoIP lookup.
-func (x *GeoIPLookupSettings) Perform() *GeoIPLookupResults {
+// GeoIPLookup performs a GeoIP lookup.
+func GeoIPLookup(settings *GeoIPLookupSettings) *GeoIPLookupResults {
 	var out GeoIPLookupResults
-	duration, err := makeTimeout(x.Timeout)
+	duration, err := makeTimeout(settings.Timeout)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot make duration: %s\n", err.Error())
 		return &out
@@ -57,13 +57,17 @@ func (x *GeoIPLookupSettings) Perform() *GeoIPLookupResults {
 		return &out
 	}
 	out.ProbeIP = probeIP
-	probeASN, probeOrg, err := geolookup.GetASN(x.ASNDatabasePath, out.ProbeIP)
+	probeASN, probeOrg, err := geolookup.GetASN(
+		settings.ASNDatabasePath, out.ProbeIP,
+	)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot discover probe ASN: %s\n", err.Error())
 		return &out
 	}
 	out.ProbeASN, out.ProbeOrg = probeASN, probeOrg
-	probeCC, err := geolookup.GetCC(x.CountryDatabasePath, out.ProbeIP)
+	probeCC, err := geolookup.GetCC(
+		settings.CountryDatabasePath, out.ProbeIP,
+	)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot discover probe CC: %s\n", err.Error())
 		return &out

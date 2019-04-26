@@ -9,9 +9,9 @@ import (
 	"github.com/measurement-kit/engine/internal/nettest"
 )
 
-// CollectorResubmitResults contains the results of resubmitting
+// ResubmitResults contains the results of resubmitting
 // a measurement to the OONI collector.
-type CollectorResubmitResults struct {
+type ResubmitResults struct {
 	// Good indicates whether we succeded or not.
 	Good bool
 
@@ -22,9 +22,9 @@ type CollectorResubmitResults struct {
 	Logs string
 }
 
-// CollectorResubmitSettings contains settings indicating how to
+// ResubmitSettings contains settings indicating how to
 // resubmit a specific OONI measurement.
-type CollectorResubmitSettings struct {
+type ResubmitSettings struct {
 	// SerializedMeasurement is the measurement to resubmit.
 	SerializedMeasurement string
 
@@ -32,19 +32,19 @@ type CollectorResubmitSettings struct {
 	Timeout int64
 }
 
-// Perform resubmits a measurement and returns the results.
-func (x *CollectorResubmitSettings) Perform() *CollectorResubmitResults {
+// Resubmit resubmits a measurement and returns the results.
+func Resubmit(settings *ResubmitSettings) *ResubmitResults {
 	// Implementation note: here we basically run the normal nettest workflow
 	// except that the measurement result is known ahead of time.
-	var out CollectorResubmitResults
+	var out ResubmitResults
 	var measurement model.Measurement
-	err := json.Unmarshal([]byte(x.SerializedMeasurement), &measurement)
+	err := json.Unmarshal([]byte(settings.SerializedMeasurement), &measurement)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot unmarshal measurement: %s\n", err.Error())
 		return &out
 	}
 	var nettest nettest.Nettest
-	duration, err := makeTimeout(x.Timeout)
+	duration, err := makeTimeout(settings.Timeout)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot make duration: %s\n", err.Error())
 		return &out

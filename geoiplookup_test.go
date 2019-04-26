@@ -10,7 +10,7 @@ func TestGeoIPLookupIntegration(t *testing.T) {
 	settings.ASNDatabasePath = "asn.mmdb.gz"
 	settings.CountryDatabasePath = "country.mmdb.gz"
 	settings.Timeout = 14
-	results := settings.Perform()
+	results := GeoIPLookup(settings)
 	fmt.Println(results.ProbeIP)
 	fmt.Println(results.ProbeASN)
 	fmt.Println(results.ProbeCC)

@@ -25,11 +25,11 @@ const origMeasurement = `{
 	"test_version": "0.0.1"
 }`
 
-func TestCollectorResubmitIntegration(t *testing.T) {
-	settings := &CollectorResubmitSettings{}
+func TestResubmitIntegration(t *testing.T) {
+	settings := &ResubmitSettings{}
 	settings.SerializedMeasurement = origMeasurement
 	settings.Timeout = 14
-	results := settings.Perform()
+	results := Resubmit(settings)
 	fmt.Println(results.Logs)
 	fmt.Println(results.UpdatedSerializedMeasurement)
 	if !results.Good {
