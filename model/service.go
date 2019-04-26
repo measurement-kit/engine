@@ -13,5 +13,5 @@ type Service struct {
 	Type string `json:"type"`
 
 	// Front is the front to use with "cloudfront" type entries.
-	Front string `json:"front"`
+	Front string `json:"front,omitempty"`
 }
