@@ -1,10 +1,12 @@
-package engine
+// Package collector implements mkall's collector API.
+package collector
 
 import (
 	"context"
 	"encoding/json"
 	"fmt"
 
+	"github.com/measurement-kit/engine/internal"
 	"github.com/measurement-kit/engine/internal/model"
 	"github.com/measurement-kit/engine/internal/nettest"
 )
@@ -17,6 +19,9 @@ type ResubmitResults struct {
 
 	// UpdatedSerializedMeasurement is the measurement with updated fields.
 	UpdatedSerializedMeasurement string
+
+	// UpdatedReportID is the updated report ID.
+	UpdatedReportID string
 
 	// Logs contains logs useful for debugging.
 	Logs string
@@ -44,7 +49,7 @@ func Resubmit(settings *ResubmitSettings) *ResubmitResults {
 		return &out
 	}
 	var nettest nettest.Nettest
-	duration, err := makeTimeout(settings.Timeout)
+	duration, err := internal.MakeTimeout(settings.Timeout)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot make duration: %s\n", err.Error())
 		return &out
@@ -82,6 +87,7 @@ func Resubmit(settings *ResubmitSettings) *ResubmitResults {
 		return &out
 	}
 	out.UpdatedSerializedMeasurement = string(data)
+	out.UpdatedReportID = measurement.ReportID
 	out.Good = true
 	return &out
 }

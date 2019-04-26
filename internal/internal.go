@@ -1,13 +1,14 @@
-package engine
+// Package internal contains implementation details.
+package internal
 
 import (
 	"errors"
 	"time"
 )
 
-// makeTimeout converts a timeout to time.Duration. This function will
+// MakeTimeout converts a timeout to time.Duration. This function will
 // fail if the timeout is negative or too big.
-func makeTimeout(timeout int64) (time.Duration, error) {
+func MakeTimeout(timeout int64) (time.Duration, error) {
 	const maxTimeout = int64(120)
 	if timeout < 0 || timeout > maxTimeout {
 		return time.Duration(0), errors.New("timeout is negative or too large")

@@ -1,15 +1,18 @@
-package engine
+// Package geoip implements mkall's GeoIP API.
+package geoip
 
 import (
 	"context"
 	"fmt"
 
+	"github.com/measurement-kit/engine/internal"
+	"github.com/measurement-kit/engine/internal/assets"
 	"github.com/measurement-kit/engine/internal/geolookup"
 	"github.com/measurement-kit/engine/internal/iplookup"
 )
 
-// GeoIPLookupResults contains the results of a GeoIP lookup.
-type GeoIPLookupResults struct {
+// LookupResults contains the results of a GeoIP lookup.
+type LookupResults struct {
 	// Good indicates whether we succeded.
 	Good bool
 
@@ -29,28 +32,34 @@ type GeoIPLookupResults struct {
 	Logs string
 }
 
-// GeoIPLookupSettings contains the GeoIP lookup settings.
-type GeoIPLookupSettings struct {
+// LookupSettings contains the GeoIP lookup settings.
+type LookupSettings struct {
 	// Timeout is the number of seconds after which we abort.
 	Timeout int64
 
-	// ASNDatabasePath is the path to the ASN database.
-	ASNDatabasePath string
-
-	// CountryDatabasePath is the path to the country database.
-	CountryDatabasePath string
+	// WorkDirPath is the path to the working directory.
+	WorkDirPath string
 }
 
-// GeoIPLookup performs a GeoIP lookup.
-func GeoIPLookup(settings *GeoIPLookupSettings) *GeoIPLookupResults {
-	var out GeoIPLookupResults
-	duration, err := makeTimeout(settings.Timeout)
+// Lookup performs a GeoIP lookup.
+func Lookup(settings *LookupSettings) *LookupResults {
+	var out LookupResults
+	if settings.WorkDirPath == "" {
+		out.Logs = fmt.Sprintf("WorkDirPath is not set\n")
+		return &out
+	}
+	duration, err := internal.MakeTimeout(settings.Timeout)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot make duration: %s\n", err.Error())
 		return &out
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
 	defer cancel()
+	err = assets.Download(ctx, settings.WorkDirPath)
+	if err != nil {
+		out.Logs = fmt.Sprintf("cannot download assets: %s\n", err.Error())
+		return &out
+	}
 	probeIP, err := iplookup.Perform(ctx)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot discover probe IP: %s\n", err.Error())
@@ -58,7 +67,7 @@ func GeoIPLookup(settings *GeoIPLookupSettings) *GeoIPLookupResults {
 	}
 	out.ProbeIP = probeIP
 	probeASN, probeOrg, err := geolookup.GetASN(
-		settings.ASNDatabasePath, out.ProbeIP,
+		assets.ASNDatabasePath(settings.WorkDirPath), out.ProbeIP,
 	)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot discover probe ASN: %s\n", err.Error())
@@ -66,7 +75,7 @@ func GeoIPLookup(settings *GeoIPLookupSettings) *GeoIPLookupResults {
 	}
 	out.ProbeASN, out.ProbeOrg = probeASN, probeOrg
 	probeCC, err := geolookup.GetCC(
-		settings.CountryDatabasePath, out.ProbeIP,
+		assets.CountryDatabasePath(settings.WorkDirPath), out.ProbeIP,
 	)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot discover probe CC: %s\n", err.Error())

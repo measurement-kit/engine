@@ -1,4 +1,4 @@
-package engine
+package collector
 
 import (
 	"fmt"
@@ -32,6 +32,7 @@ func TestResubmitIntegration(t *testing.T) {
 	results := Resubmit(settings)
 	fmt.Println(results.Logs)
 	fmt.Println(results.UpdatedSerializedMeasurement)
+	fmt.Println(results.UpdatedReportID)
 	if !results.Good {
 		t.Fatal("resubmission failed")
 	}

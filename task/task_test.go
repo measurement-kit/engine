@@ -1,13 +1,13 @@
-package engine
+package task
 
 import (
 	"fmt"
 	"testing"
 )
 
-// TestPsiphonTunnelIntegration runs a psiphontunnel nettest.
+// TestPsiphonTunnelIntegration runs a psiphontunnel task.
 func TestPsiphonTunnelIntegration(t *testing.T) {
-	task := StartTask(`{
+	handle := Start(`{
 		"name": "PsiphonTunnel",
 		"options": {
 			"config_file_path": "/tmp/psiphon.json",
@@ -16,8 +16,8 @@ func TestPsiphonTunnelIntegration(t *testing.T) {
 			"work_dir_path": "/tmp"
 		}
 	}`)
-	for !task.IsDone() {
-		ev := task.WaitForNextEvent()
+	for !handle.IsDone() {
+		ev := handle.WaitForNextEvent()
 		fmt.Printf("%s\n\n", ev)
 	}
 }

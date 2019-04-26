@@ -1,4 +1,5 @@
-package engine
+// Package task implements mkall's task API.
+package task
 
 import (
 	"context"
@@ -20,8 +21,8 @@ type taskAccounting struct {
 	UploadedKB   float64 `json:"uploaded_kb"`
 }
 
-// Task is a task run by Measurement Kit.
-type Task struct {
+// Handle contains the task internals.
+type Handle struct {
 	accounting taskAccounting
 	cancel     context.CancelFunc
 	ctx        context.Context
@@ -32,45 +33,45 @@ type Task struct {
 
 var semaphore sync.Mutex
 
-// StartTask starts a new Measurement Kit task.
-func StartTask(settings string) *Task {
-	task := &Task{}
-	task.ctx, task.cancel = context.WithCancel(context.Background())
-	task.out = make(chan interface{})
+// Start starts a new task.
+func Start(settings string) *Handle {
+	handle := &Handle{}
+	handle.ctx, handle.cancel = context.WithCancel(context.Background())
+	handle.out = make(chan interface{})
 	if os.Getenv("MK_EVENT_PRETTY") == "1" {
-		task.marshal = func(d interface{}) ([]byte, error) {
+		handle.marshal = func(d interface{}) ([]byte, error) {
 			return json.MarshalIndent(d, "", "  ")
 		}
 	} else {
-		task.marshal = json.Marshal
+		handle.marshal = json.Marshal
 	}
 	go func() {
-		task.out <- model.Event{Key: "status.queued", Value: struct{}{}}
+		handle.out <- model.Event{Key: "status.queued", Value: struct{}{}}
 		semaphore.Lock()
 		defer semaphore.Unlock()
-		task.run(settings)
-		task.out <- model.Event{
+		handle.run(settings)
+		handle.out <- model.Event{
 			Key:   "status.end",
-			Value: task.accounting,
+			Value: handle.accounting,
 		}
-		close(task.out)
+		close(handle.out)
 	}()
-	return task
+	return handle
 }
 
 // IsDone indicates whether the task is done.
-func (task *Task) IsDone() bool {
-	return atomic.LoadInt64(&task.done) != 0
+func (handle *Handle) IsDone() bool {
+	return atomic.LoadInt64(&handle.done) != 0
 }
 
 // WaitForNextEvent blocks until the task emits its next event.
-func (task *Task) WaitForNextEvent() string {
-	something, ok := <-task.out
+func (handle *Handle) WaitForNextEvent() string {
+	something, ok := <-handle.out
 	if !ok {
-		atomic.StoreInt64(&task.done, 1)
+		atomic.StoreInt64(&handle.done, 1)
 		return `{"key":"status.terminated","value":{}}`
 	}
-	data, err := task.marshal(something)
+	data, err := handle.marshal(something)
 	if err == nil {
 		return string(data)
 	}
@@ -88,8 +89,8 @@ func (task *Task) WaitForNextEvent() string {
 }
 
 // Interrupt interrupts a running task.
-func (task *Task) Interrupt() {
-	task.cancel()
+func (handle *Handle) Interrupt() {
+	handle.cancel()
 }
 
 type taskOptions struct {
@@ -126,11 +127,11 @@ type taskMeasurement struct {
 	JSONStr string `json:"json_str,omitempty"`
 }
 
-func (task *Task) run(s string) {
+func (handle *Handle) run(s string) {
 	var settings taskSettings
 	err := json.Unmarshal([]byte(s), &settings)
 	if err != nil {
-		task.out <- model.Event{
+		handle.out <- model.Event{
 			Key: "failure.startup",
 			Value: taskFailure{
 				Failure: err.Error(),
@@ -140,7 +141,7 @@ func (task *Task) run(s string) {
 	}
 
 	if settings.Options.SoftwareName == "" {
-		task.out <- model.Event{
+		handle.out <- model.Event{
 			Key: "failure.startup",
 			Value: taskFailure{
 				Failure: "empty_variable: software_name",
@@ -149,7 +150,7 @@ func (task *Task) run(s string) {
 		return
 	}
 	if settings.Options.SoftwareVersion == "" {
-		task.out <- model.Event{
+		handle.out <- model.Event{
 			Key: "failure.startup",
 			Value: taskFailure{
 				Failure: "empty_variable: software_version",
@@ -158,7 +159,7 @@ func (task *Task) run(s string) {
 		return
 	}
 	if settings.Options.WorkDirPath == "" {
-		task.out <- model.Event{
+		handle.out <- model.Event{
 			Key: "failure.startup",
 			Value: taskFailure{
 				Failure: "empty_variable: work_dir_path",
@@ -169,7 +170,7 @@ func (task *Task) run(s string) {
 
 	var nt *nettest.Nettest
 	if settings.Name == "PsiphonTunnel" {
-		nt = psiphontunnel.NewNettest(task.ctx, psiphontunnel.Config{
+		nt = psiphontunnel.NewNettest(handle.ctx, psiphontunnel.Config{
 			ConfigFilePath: settings.Options.ConfigFilePath,
 			WorkDirPath:    settings.Options.WorkDirPath,
 		})
@@ -177,7 +178,7 @@ func (task *Task) run(s string) {
 	}
 
 	if nt == nil {
-		task.out <- model.Event{
+		handle.out <- model.Event{
 			Key: "failure.startup",
 			Value: taskFailure{
 				Failure: "unknown_nettest_error",
@@ -192,7 +193,7 @@ func (task *Task) run(s string) {
 	if !settings.Options.NoBouncer {
 		err = nt.DiscoverAvailableCollectors()
 		if err != nil {
-			task.out <- model.Event{
+			handle.out <- model.Event{
 				Key: "log",
 				Value: taskLog{
 					Message:  fmt.Sprintf("discover_collector_error: %s", err.Error()),
@@ -201,13 +202,13 @@ func (task *Task) run(s string) {
 			}
 			// FALLTHROUGH
 		}
-		task.out <- model.Event{
+		handle.out <- model.Event{
 			Key:   "status.available_collectors",
 			Value: nt.AvailableCollectors,
 		}
 		err = nt.DiscoverAvailableTestHelpers()
 		if err != nil {
-			task.out <- model.Event{
+			handle.out <- model.Event{
 				Key: "log",
 				Value: taskLog{
 					Message:  fmt.Sprintf("discover_test_helpers_error: %s", err.Error()),
@@ -216,12 +217,12 @@ func (task *Task) run(s string) {
 			}
 			// FALLTHROUGH
 		}
-		task.out <- model.Event{
+		handle.out <- model.Event{
 			Key:   "status.available_test_helpers",
 			Value: nt.AvailableTestHelpers,
 		}
 	}
-	task.out <- model.Event{
+	handle.out <- model.Event{
 		Key: "status.progress",
 		Value: taskLog{
 			Percentage: 0.1,
@@ -230,9 +231,9 @@ func (task *Task) run(s string) {
 	}
 
 	if !settings.Options.NoGeoLookup {
-		err = assets.Download(task.ctx, settings.Options.WorkDirPath)
+		err = assets.Download(handle.ctx, settings.Options.WorkDirPath)
 		if err != nil {
-			task.out <- model.Event{
+			handle.out <- model.Event{
 				Key: "failure.startup",
 				Value: taskFailure{
 					Failure: fmt.Sprintf("download_assets_error: %s", err.Error()),
@@ -244,7 +245,7 @@ func (task *Task) run(s string) {
 		nt.CountryDatabasePath = assets.CountryDatabasePath(settings.Options.WorkDirPath)
 		err = nt.GeoLookup()
 		if err != nil {
-			task.out <- model.Event{
+			handle.out <- model.Event{
 				Key: "log",
 				Value: taskLog{
 					Message:  fmt.Sprintf("geolookup_error: %s", err.Error()),
@@ -253,7 +254,7 @@ func (task *Task) run(s string) {
 			}
 			// FALLTHROUGH
 		}
-		task.out <- model.Event{
+		handle.out <- model.Event{
 			Key: "status.geoip_lookup",
 			Value: struct {
 				ProbeIP          string `json:"probe_ip"`
@@ -268,7 +269,7 @@ func (task *Task) run(s string) {
 			},
 		}
 	}
-	task.out <- model.Event{
+	handle.out <- model.Event{
 		Key: "status.progress",
 		Value: taskLog{
 			Percentage: 0.2,
@@ -279,7 +280,7 @@ func (task *Task) run(s string) {
 	if !settings.Options.NoResolverLookup {
 		err = nt.ResolverLookup()
 		if err != nil {
-			task.out <- model.Event{
+			handle.out <- model.Event{
 				Key: "log",
 				Value: taskLog{
 					Message:  fmt.Sprintf("resolver_lookup_error: %s", err.Error()),
@@ -288,7 +289,7 @@ func (task *Task) run(s string) {
 			}
 			// FALLTHROUGH
 		}
-		task.out <- model.Event{
+		handle.out <- model.Event{
 			Key: "status.resolver_lookup",
 			Value: struct {
 				ResolverIP string `json:"resolver_ip"`
@@ -297,7 +298,7 @@ func (task *Task) run(s string) {
 			},
 		}
 	}
-	task.out <- model.Event{
+	handle.out <- model.Event{
 		Key: "status.progress",
 		Value: taskLog{
 			Percentage: 0.3,
@@ -307,7 +308,7 @@ func (task *Task) run(s string) {
 
 	if !settings.Options.NoCollector {
 		for err := range nt.OpenReport() {
-			task.out <- model.Event{
+			handle.out <- model.Event{
 				Key: "log",
 				Value: taskLog{
 					Message:  fmt.Sprintf("open_report_error: %s", err.Error()),
@@ -318,7 +319,7 @@ func (task *Task) run(s string) {
 		}
 		if nt.Report.ID != "" {
 			defer nt.CloseReport()
-			task.out <- model.Event{
+			handle.out <- model.Event{
 				Key: "status.report_create",
 				Value: struct {
 					ReportID string `json:"report_id"`
@@ -327,7 +328,7 @@ func (task *Task) run(s string) {
 				},
 			}
 		} else {
-			task.out <- model.Event{
+			handle.out <- model.Event{
 				Key: "failure.report_create",
 				Value: taskFailure{
 					Failure: "sequential_operation_error",
@@ -335,7 +336,7 @@ func (task *Task) run(s string) {
 			}
 		}
 	}
-	task.out <- model.Event{
+	handle.out <- model.Event{
 		Key: "status.progress",
 		Value: taskLog{
 			Percentage: 0.4,
@@ -344,7 +345,7 @@ func (task *Task) run(s string) {
 	}
 
 	for idx, input := range settings.Inputs {
-		task.out <- model.Event{
+		handle.out <- model.Event{
 			Key: "status.measurement_start",
 			Value: taskMeasurement{
 				Idx:   idx,
@@ -354,11 +355,11 @@ func (task *Task) run(s string) {
 
 		measurement := nt.NewMeasurement()
 		for ev := range nt.StartMeasurement(input, &measurement) {
-			task.out <- ev
+			handle.out <- ev
 		}
 		jsonbytes, err := json.Marshal(measurement)
 		if err != nil {
-			task.out <- model.Event{
+			handle.out <- model.Event{
 				Key: "bug.json_dump",
 				Value: taskFailure{
 					Failure: err.Error(),
@@ -367,7 +368,7 @@ func (task *Task) run(s string) {
 			continue
 		}
 		jsonstr := string(jsonbytes)
-		task.out <- model.Event{
+		handle.out <- model.Event{
 			Key: "measurement",
 			Value: taskMeasurement{
 				Idx:     idx,
@@ -379,7 +380,7 @@ func (task *Task) run(s string) {
 		if nt.Report.ID != "" {
 			err = nt.SubmitMeasurement(&measurement)
 			if err != nil {
-				task.out <- model.Event{
+				handle.out <- model.Event{
 					Key: "failure.measurement_submission",
 					Value: taskMeasurement{
 						Failure: err.Error(),
@@ -389,7 +390,7 @@ func (task *Task) run(s string) {
 					},
 				}
 			} else {
-				task.out <- model.Event{
+				handle.out <- model.Event{
 					Key: "status.measurement_submission",
 					Value: taskMeasurement{
 						Idx:   idx,
@@ -399,14 +400,14 @@ func (task *Task) run(s string) {
 			}
 		}
 
-		task.out <- model.Event{
+		handle.out <- model.Event{
 			Key: "status.measurement_done",
 			Value: taskMeasurement{
 				Idx:   idx,
 				Input: input,
 			},
 		}
-		task.out <- model.Event{
+		handle.out <- model.Event{
 			Key: "status.progress",
 			Value: taskLog{
 				Percentage: 0.4 + float64(idx)/float64(len(settings.Inputs))/0.6,
