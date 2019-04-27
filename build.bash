@@ -1,29 +1,32 @@
 #!/bin/sh
 set -ex
 
+go get -v ./cmd/mkengine-version
+
 engine="github.com/measurement-kit/engine"
 pkgs=`echo ${engine}/{collector,geoip,task}`
+version=`${GOPATH}/bin/mkengine-version`
 
 #
 # Android
 #
 
-time gomobile bind                             \
-  -target android                              \
-  -o mkengine.aar                              \
-  -javapkg io.ooni.mk.engine                   \
-  -ldflags="-s -w"                             \
+time gomobile bind            \
+  -target android             \
+  -o mkengine-${version}.aar  \
+  -javapkg io.ooni.mk.engine  \
+  -ldflags="-s -w"            \
   ${pkgs}
 
 #
 # iOS
 #
 
-time gomobile bind                             \
-  -target ios                                  \
-  -o MKEngine.framework                        \
-  -prefix MKE                                  \
-  -ldflags="-s -w"                             \
+time gomobile bind       \
+  -target ios            \
+  -o MKEngine.framework  \
+  -prefix MKE            \
+  -ldflags="-s -w"       \
   ${pkgs}
 
 versionA=MKEngine.framework/Versions/A
@@ -42,4 +45,4 @@ mv ${versionA}/Modules/module.modulemap{.new,}
 rm MKEngine.framework/Collector
 ln -s Versions/Current/MKEngine MKEngine.framework/MKEngine
 
-tar -cvzf MKEngine.framework.tgz MKEngine.framework
+tar -cvzf MKEngine-${version}.framework.tgz MKEngine.framework
