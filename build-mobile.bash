@@ -1,7 +1,7 @@
 #!/bin/sh
 set -ex
 
-go get -v ./cmd/mkengine-version
+go get -v ./internal/cmd/mkengine-version
 
 engine="github.com/measurement-kit/engine"
 pkgs=`echo ${engine}/{collector,geoip,task}`
