@@ -11,7 +11,7 @@ import (
 
 // newPsiphonTunnel creates a new PsiphonTunnel nettest.
 func newPsiphonTunnel(ctx context.Context, settings taskSettings) *nettest.Nettest {
-	return psiphontunnel.NewNettest(handle.ctx, psiphontunnel.Config{
+	return psiphontunnel.NewNettest(ctx, psiphontunnel.Config{
 		ConfigFilePath: settings.Options.ConfigFilePath,
 		WorkDirPath:    settings.Options.WorkDirPath,
 	})
