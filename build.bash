@@ -4,12 +4,20 @@ set -ex
 engine="github.com/measurement-kit/engine"
 pkgs=`echo ${engine}/{collector,geoip,task}`
 
-echo time gomobile bind                             \
+#
+# Android
+#
+
+time gomobile bind                             \
   -target android                              \
   -o mkengine.aar                              \
   -javapkg io.ooni.mk.engine                   \
   -ldflags="-s -w"                             \
   ${pkgs}
+
+#
+# iOS
+#
 
 time gomobile bind                             \
   -target ios                                  \
@@ -33,3 +41,5 @@ mv ${versionA}/Modules/module.modulemap{.new,}
 
 rm MKEngine.framework/Collector
 ln -s Versions/Current/MKEngine MKEngine.framework/MKEngine
+
+tar -cvzf MKEngine.framework.tgz MKEngine.framework
