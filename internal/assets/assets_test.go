@@ -70,7 +70,7 @@ func TestCacheOpenOSOpenError(t *testing.T) {
 func TestCacheOpenIOCopyError(t *testing.T) {
 	savedOSOpen := osOpen
 	osOpen = func(name string) (*os.File, error) {
-		return ioutil.TempFile("", "measurement-kit-engine")
+		return ioutil.TempFile("", "MKEngine")
 	}
 	mockedError := errors.New("mocked error")
 	savedIOCopy := ioCopy
@@ -90,7 +90,7 @@ func TestCacheOpenIOCopyError(t *testing.T) {
 func TestCacheSHA256Mismatch(t *testing.T) {
 	savedOSOpen := osOpen
 	osOpen = func(name string) (*os.File, error) {
-		return ioutil.TempFile("", "measurement-kit-engine")
+		return ioutil.TempFile("", "MKEngine")
 	}
 	err := cacheOpen(context.Background(), "..", allAssets[0])
 	if err == nil || err.Error() != "SHA256 mismatch" {

@@ -55,8 +55,8 @@ func emit(ch chan<- model.Measurement, elapsed float64, numBytes int64) {
 			NumBytes: numBytes,
 		},
 		Direction: model.DirectionUpload,
-		Elapsed: elapsed,
-		Origin: model.OriginClient,
+		Elapsed:   elapsed,
+		Origin:    model.OriginClient,
 	}
 }
 

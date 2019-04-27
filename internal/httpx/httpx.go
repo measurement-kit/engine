@@ -120,7 +120,7 @@ func (r Request) Perform() (*Response, error) {
 
 // userAgent creates the user agent string
 func userAgent() string {
-	return fmt.Sprintf("measurement-kit-engine/%s", version.Version)
+	return fmt.Sprintf("MKEngine/%s", version.Version)
 }
 
 // GET performs a GET request and returns the body.

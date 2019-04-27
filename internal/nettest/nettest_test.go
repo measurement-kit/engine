@@ -48,7 +48,7 @@ func TestOpenReportIntegration(t *testing.T) {
 		Ctx:             context.Background(),
 		ProbeASN:        "AS0",
 		ProbeCC:         "ZZ",
-		SoftwareName:    "measurement-kit-engine",
+		SoftwareName:    "MKEngine",
 		SoftwareVersion: "0.0.1",
 		TestName:        "dummy",
 		TestVersion:     "0.0.1",
