@@ -1,5 +1,4 @@
 language: go
 go:
 - 1.12.x
-gobuild_args: -v
 dist: xenial
