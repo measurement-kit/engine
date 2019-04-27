@@ -1,3 +1,5 @@
+// +build !small
+
 // Package psiphontunnel implements the psiphontunnel nettest.
 package psiphontunnel
 

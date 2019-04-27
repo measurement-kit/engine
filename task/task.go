@@ -13,7 +13,6 @@ import (
 	"github.com/measurement-kit/engine/internal/model"
 	"github.com/measurement-kit/engine/internal/nettest"
 	"github.com/measurement-kit/engine/internal/nettest/ndt7"
-	"github.com/measurement-kit/engine/internal/nettest/psiphontunnel"
 )
 
 type taskAccounting struct {
@@ -171,10 +170,7 @@ func (handle *Handle) run(s string) {
 
 	var nt *nettest.Nettest
 	if settings.Name == "PsiphonTunnel" {
-		nt = psiphontunnel.NewNettest(handle.ctx, psiphontunnel.Config{
-			ConfigFilePath: settings.Options.ConfigFilePath,
-			WorkDirPath:    settings.Options.WorkDirPath,
-		})
+		nt = newPsiphonTunnel(handle.ctx, settings)
 		settings.Inputs = []string{""} // run exactly once
 
 	} else if settings.Name == "Ndt7" {

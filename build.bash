@@ -16,6 +16,7 @@ time gomobile bind            \
   -o mkengine-${version}.aar  \
   -javapkg io.ooni.mk.engine  \
   -ldflags="-s -w"            \
+  -tags="$1"                  \
   ${pkgs}
 
 #
@@ -27,6 +28,7 @@ time gomobile bind       \
   -o MKEngine.framework  \
   -prefix MKE            \
   -ldflags="-s -w"       \
+  -tags="$1"             \
   ${pkgs}
 
 versionA=MKEngine.framework/Versions/A

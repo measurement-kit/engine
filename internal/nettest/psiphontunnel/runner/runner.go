@@ -1,3 +1,5 @@
+// +build !small
+
 // Package runner implements the psiphontunnel runner.
 package runner
 
