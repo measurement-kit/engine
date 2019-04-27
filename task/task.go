@@ -12,6 +12,7 @@ import (
 	"github.com/measurement-kit/engine/internal/assets"
 	"github.com/measurement-kit/engine/internal/model"
 	"github.com/measurement-kit/engine/internal/nettest"
+	"github.com/measurement-kit/engine/internal/nettest/ndt7"
 	"github.com/measurement-kit/engine/internal/nettest/psiphontunnel"
 )
 
@@ -174,7 +175,11 @@ func (handle *Handle) run(s string) {
 			ConfigFilePath: settings.Options.ConfigFilePath,
 			WorkDirPath:    settings.Options.WorkDirPath,
 		})
-		settings.Inputs = []string{""} // run just once
+		settings.Inputs = []string{""} // run exactly once
+
+	} else if settings.Name == "Ndt7" {
+		nt = ndt7.NewNettest(handle.ctx, ndt7.Config{})
+		settings.Inputs = []string{""} // run exactly once
 	}
 
 	if nt == nil {
