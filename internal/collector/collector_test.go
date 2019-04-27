@@ -77,8 +77,8 @@ func TestOpenJSONMarshalError(t *testing.T) {
 	}
 	ctx := context.Background()
 	_, err := Open(ctx, config, template)
-	if err != mockedError {
-		t.Fatal("Not the error we were expecting")
+	if err == nil {
+		t.Fatal("We did not expect a success here")
 	}
 	jsonMarshal = savedJSONMarshal
 }

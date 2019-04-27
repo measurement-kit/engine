@@ -84,8 +84,8 @@ func TestPerformReadBodyError(t *testing.T) {
 		r.Method = "GET"
 		r.URL = baseURL + "/status/200"
 		_, err := r.Perform()
-		if err != mockedError {
-			t.Fatal("Not the error we were expecting")
+		if err == nil {
+			t.Fatal("We did not expect a success here")
 		}
 		ioutilReadAll = savedReadAll
 	})
@@ -106,8 +106,8 @@ func TestPerformProxySOCKS5Error(t *testing.T) {
 		r.URL = baseURL + "/status/200"
 		r.SOCKS5ProxyPort = 9999
 		_, err := r.Perform()
-		if err != mockedError {
-			t.Fatal("Not the error we were expecting")
+		if err == nil {
+			t.Fatal("We did not expect a success here")
 		}
 		proxySOCKS5 = savedProxySOCKS5
 	})
