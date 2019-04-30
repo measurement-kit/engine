@@ -1,4 +1,6 @@
-// Package collector implements mkall's collector API.
+// Package collector implements Measurement Kit's collector API.
+//
+// See https://github.com/measurement-kit/api#collector.
 package collector
 
 import (
@@ -27,8 +29,8 @@ type SubmitResults struct {
 	Logs string
 }
 
-// SubmitTask contains settings indicating how to submit or
-// resubmit a specific OONI measurement.
+// SubmitTask is a synchronous task for submitting or resubmitting a
+// specific OONI measurement to the OONI collector.
 type SubmitTask struct {
 	// SerializedMeasurement is the measurement to submit.
 	SerializedMeasurement string
@@ -43,26 +45,31 @@ type SubmitTask struct {
 	Timeout int64
 }
 
+// defaultTimeout is the default timeout in seconds.
+var defaultTimeout int64 = 30
+
 // NewSubmitTask creates a new SubmitTask instance.
-func NewSubmitTask(softwareName, softwareVersion string) *SubmitTask {
+func NewSubmitTask(softwareName, softwareVersion, serializedMeasurement string) *SubmitTask {
 	return &SubmitTask{
+		SerializedMeasurement: serializedMeasurement,
 		SoftwareName: softwareName,
 		SoftwareVersion: softwareVersion,
+		Timeout: defaultTimeout,
 	}
 }
 
 // SubmitInto is like Submit but takes the results pointers.
-func SubmitInto(settings *SubmitTask, out *SubmitResults) {
+func (task *SubmitTask) SubmitInto(out *SubmitResults) {
 	// Implementation note: here we basically run the normal nettest workflow
 	// except that the measurement result is known ahead of time.
 	var measurement model.Measurement
-	err := json.Unmarshal([]byte(settings.SerializedMeasurement), &measurement)
+	err := json.Unmarshal([]byte(task.SerializedMeasurement), &measurement)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot unmarshal measurement: %s\n", err.Error())
 		return
 	}
 	var nettest nettest.Nettest
-	duration, err := internal.MakeTimeout(settings.Timeout)
+	duration, err := internal.MakeTimeout(task.Timeout)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot make duration: %s\n", err.Error())
 		return
@@ -72,8 +79,8 @@ func SubmitInto(settings *SubmitTask, out *SubmitResults) {
 	nettest.Ctx = ctx
 	nettest.TestName = measurement.TestName
 	nettest.TestVersion = measurement.TestVersion
-	nettest.SoftwareName = settings.SoftwareName
-	nettest.SoftwareVersion = settings.SoftwareVersion
+	nettest.SoftwareName = task.SoftwareName
+	nettest.SoftwareVersion = task.SoftwareVersion
 	nettest.TestStartTime = measurement.TestStartTime
 	err = nettest.DiscoverAvailableCollectors()
 	if err != nil {
@@ -105,8 +112,8 @@ func SubmitInto(settings *SubmitTask, out *SubmitResults) {
 }
 
 // Submit submits (or resubmits) a measurement and returns the results.
-func Submit(settings *SubmitTask) *SubmitResults {
+func (task *SubmitTask) Submit() *SubmitResults {
 	var out SubmitResults
-	SubmitInto(settings, &out)
+	task.SubmitInto(&out)
 	return &out
 }

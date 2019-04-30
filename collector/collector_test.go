@@ -26,10 +26,8 @@ const origMeasurement = `{
 }`
 
 func TestSubmitIntegration(t *testing.T) {
-	settings := NewSubmitTask("ooniprobe-android", "2.1.0")
-	settings.SerializedMeasurement = origMeasurement
-	settings.Timeout = 14
-	results := Submit(settings)
+	task := NewSubmitTask("ooniprobe-android", "2.1.0", origMeasurement)
+	results := task.Submit()
 	fmt.Println(results.Logs)
 	fmt.Println(results.UpdatedSerializedMeasurement)
 	fmt.Println(results.UpdatedReportID)
