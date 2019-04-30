@@ -33,8 +33,22 @@ type SubmitTask struct {
 	// SerializedMeasurement is the measurement to submit.
 	SerializedMeasurement string
 
+	// SoftwareName is the name of the software submitting the measurement.
+	SoftwareName string
+
+	// SoftwareVersion is the name of the software submitting the measurement.
+	SoftwareVersion string
+
 	// Timeout is the number of seconds after which we abort submitting.
 	Timeout int64
+}
+
+// NewSubmitTask creates a new SubmitTask instance.
+func NewSubmitTask(softwareName, softwareVersion string) *SubmitTask {
+	return &SubmitTask{
+		SoftwareName: softwareName,
+		SoftwareVersion: softwareVersion,
+	}
 }
 
 // SubmitInto is like Submit but takes the results pointers.
@@ -58,8 +72,8 @@ func SubmitInto(settings *SubmitTask, out *SubmitResults) {
 	nettest.Ctx = ctx
 	nettest.TestName = measurement.TestName
 	nettest.TestVersion = measurement.TestVersion
-	nettest.SoftwareName = measurement.SoftwareName
-	nettest.SoftwareVersion = measurement.SoftwareVersion
+	nettest.SoftwareName = settings.SoftwareName
+	nettest.SoftwareVersion = settings.SoftwareVersion
 	nettest.TestStartTime = measurement.TestStartTime
 	err = nettest.DiscoverAvailableCollectors()
 	if err != nil {

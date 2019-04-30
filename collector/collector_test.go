@@ -12,8 +12,8 @@ const origMeasurement = `{
 	"probe_asn": "AS0",
 	"probe_cc": "ZZ",
 	"probe_ip": "127.0.0.1",
-	"software_name": "measurement_kit",
-	"software_version": "0.2.0-alpha.1",
+	"software_name": "ooniprobe-android",
+	"software_version": "2.0.0",
 	"test_keys": {
 		"failure": null,
 		"received": [],
@@ -26,7 +26,7 @@ const origMeasurement = `{
 }`
 
 func TestSubmitIntegration(t *testing.T) {
-	settings := &SubmitTask{}
+	settings := NewSubmitTask("ooniprobe-android", "2.1.0")
 	settings.SerializedMeasurement = origMeasurement
 	settings.Timeout = 14
 	results := Submit(settings)
