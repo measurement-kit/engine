@@ -28,10 +28,10 @@ const origMeasurement = `{
 func TestSubmitIntegration(t *testing.T) {
 	task := NewCollectorSubmitTask("ooniprobe-android", "2.1.0", origMeasurement)
 	results := task.Run()
-	fmt.Println(results.Logs)
-	fmt.Println(results.UpdatedSerializedMeasurement)
-	fmt.Println(results.UpdatedReportID)
-	if !results.Good {
+	fmt.Println(results.Logs())
+	fmt.Println(results.UpdatedSerializedMeasurement())
+	fmt.Println(results.UpdatedReportID())
+	if !results.Good() {
 		t.Fatal("resubmission failed")
 	}
 }
