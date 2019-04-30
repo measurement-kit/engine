@@ -1,4 +1,4 @@
-package collector
+package engine
 
 import (
 	"fmt"
@@ -26,8 +26,8 @@ const origMeasurement = `{
 }`
 
 func TestSubmitIntegration(t *testing.T) {
-	task := NewSubmitTask("ooniprobe-android", "2.1.0", origMeasurement)
-	results := task.Submit()
+	task := NewCollectorSubmitTask("ooniprobe-android", "2.1.0", origMeasurement)
+	results := task.Run()
 	fmt.Println(results.Logs)
 	fmt.Println(results.UpdatedSerializedMeasurement)
 	fmt.Println(results.UpdatedReportID)
