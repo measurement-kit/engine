@@ -23,7 +23,7 @@ type CollectorSubmitResults struct {
 	logs                         string
 }
 
-// Good returns whether we succeded or not.
+// Good returns whether we succeeded or not.
 func (r *CollectorSubmitResults) Good() bool {
 	return r.good
 }
