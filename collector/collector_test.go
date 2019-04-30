@@ -25,11 +25,11 @@ const origMeasurement = `{
 	"test_version": "0.0.1"
 }`
 
-func TestResubmitIntegration(t *testing.T) {
-	settings := &ResubmitSettings{}
+func TestSubmitIntegration(t *testing.T) {
+	settings := &SubmitTask{}
 	settings.SerializedMeasurement = origMeasurement
 	settings.Timeout = 14
-	results := Resubmit(settings)
+	results := Submit(settings)
 	fmt.Println(results.Logs)
 	fmt.Println(results.UpdatedSerializedMeasurement)
 	fmt.Println(results.UpdatedReportID)

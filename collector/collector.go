@@ -11,9 +11,9 @@ import (
 	"github.com/measurement-kit/engine/internal/nettest"
 )
 
-// ResubmitResults contains the results of resubmitting
+// SubmitResults contains the results of submitting or resubmitting
 // a measurement to the OONI collector.
-type ResubmitResults struct {
+type SubmitResults struct {
 	// Good indicates whether we succeded or not.
 	Good bool
 
@@ -27,18 +27,18 @@ type ResubmitResults struct {
 	Logs string
 }
 
-// ResubmitSettings contains settings indicating how to
+// SubmitTask contains settings indicating how to submit or
 // resubmit a specific OONI measurement.
-type ResubmitSettings struct {
-	// SerializedMeasurement is the measurement to resubmit.
+type SubmitTask struct {
+	// SerializedMeasurement is the measurement to submit.
 	SerializedMeasurement string
 
-	// Timeout is the number of seconds after which we abort resubmitting.
+	// Timeout is the number of seconds after which we abort submitting.
 	Timeout int64
 }
 
-// ResubmitInto is like resubmit but takes the results as a pointer.
-func ResubmitInto(settings *ResubmitSettings, out *ResubmitResults) {
+// SubmitInto is like Submit but takes the results pointers.
+func SubmitInto(settings *SubmitTask, out *SubmitResults) {
 	// Implementation note: here we basically run the normal nettest workflow
 	// except that the measurement result is known ahead of time.
 	var measurement model.Measurement
@@ -90,9 +90,9 @@ func ResubmitInto(settings *ResubmitSettings, out *ResubmitResults) {
 	out.Good = true
 }
 
-// Resubmit resubmits a measurement and returns the results.
-func Resubmit(settings *ResubmitSettings) *ResubmitResults {
-	var out ResubmitResults
-	ResubmitInto(settings, &out)
+// Submit submits (or resubmits) a measurement and returns the results.
+func Submit(settings *SubmitTask) *SubmitResults {
+	var out SubmitResults
+	SubmitInto(settings, &out)
 	return &out
 }
