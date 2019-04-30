@@ -239,10 +239,7 @@ import (
 
 	"github.com/measurement-kit/engine/internal/bouncer"
 	"github.com/measurement-kit/engine/internal/collector"
-	"github.com/measurement-kit/engine/internal/geolookup"
-	"github.com/measurement-kit/engine/internal/iplookup"
 	"github.com/measurement-kit/engine/internal/model"
-	"github.com/measurement-kit/engine/internal/resolverlookup"
 )
 
 // DateFormat is the format used by OONI for dates inside reports.
@@ -380,37 +377,12 @@ func (nettest *Nettest) GeoLookup() error {
 	nettest.ProbeASN = "AS0"
 	nettest.ProbeCC = "ZZ"
 	nettest.ProbeNetworkName = ""
-	if nettest.ASNDatabasePath == "" || nettest.CountryDatabasePath == "" {
-		return ErrNoDatabasesPath
-	}
-	var err, other error
-	nettest.ProbeIP, other = iplookup.Perform(nettest.Ctx)
-	if other != nil && err == nil {
-		err = other
-	}
-	nettest.ProbeASN, nettest.ProbeNetworkName, other = geolookup.GetASN(
-		nettest.ASNDatabasePath, nettest.ProbeIP,
-	)
-	if other != nil && err == nil {
-		err = other
-	}
-	nettest.ProbeCC, other = geolookup.GetCC(
-		nettest.CountryDatabasePath, nettest.ProbeIP,
-	)
-	if other != nil && err == nil {
-		err = other
-	}
-	return err
+	return errors.New("Not implemented")
 }
 
 // ResolverLookup discovers the resolver's IP address.
 func (nettest *Nettest) ResolverLookup() error {
-	ip, err := resolverlookup.Perform(nettest.Ctx)
-	if err != nil {
-		return err
-	}
-	nettest.ResolverIP = ip
-	return nil
+	return errors.New("Not implemented")
 }
 
 // openReport is the internal function that open a report.

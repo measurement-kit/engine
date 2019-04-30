@@ -29,19 +29,6 @@ func TestDiscoverAvailableTestHelpersIntegration(t *testing.T) {
 	}
 }
 
-// TestGeoLookupIntegration discovers probe IP, probe ASN, etc.
-func TestGeoLookupIntegration(t *testing.T) {
-	nettest := &Nettest{
-		Ctx:                 context.Background(),
-		ASNDatabasePath:     "../asn.mmdb.gz",
-		CountryDatabasePath: "../country.mmdb.gz",
-	}
-	err := nettest.GeoLookup()
-	if err != nil {
-		t.Fatal(err)
-	}
-}
-
 // TestOpenReportIntegration opens a report.
 func TestOpenReportIntegration(t *testing.T) {
 	nettest := &Nettest{
