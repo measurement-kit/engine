@@ -41,29 +41,28 @@ type LookupSettings struct {
 	WorkDirPath string
 }
 
-// Lookup performs a GeoIP lookup.
-func Lookup(settings *LookupSettings) *LookupResults {
-	var out LookupResults
+// LookupInto is like Lookup but the results are passed as a pointer.
+func LookupInto(settings *LookupSettings, out *LookupResults) {
 	if settings.WorkDirPath == "" {
 		out.Logs = fmt.Sprintf("WorkDirPath is not set\n")
-		return &out
+		return
 	}
 	duration, err := internal.MakeTimeout(settings.Timeout)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot make duration: %s\n", err.Error())
-		return &out
+		return
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
 	defer cancel()
 	err = assets.Download(ctx, settings.WorkDirPath)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot download assets: %s\n", err.Error())
-		return &out
+		return
 	}
 	probeIP, err := iplookup.Perform(ctx)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot discover probe IP: %s\n", err.Error())
-		return &out
+		return
 	}
 	out.ProbeIP = probeIP
 	probeASN, probeOrg, err := geolookup.GetASN(
@@ -71,7 +70,7 @@ func Lookup(settings *LookupSettings) *LookupResults {
 	)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot discover probe ASN: %s\n", err.Error())
-		return &out
+		return
 	}
 	out.ProbeASN, out.ProbeOrg = probeASN, probeOrg
 	probeCC, err := geolookup.GetCC(
@@ -79,9 +78,15 @@ func Lookup(settings *LookupSettings) *LookupResults {
 	)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot discover probe CC: %s\n", err.Error())
-		return &out
+		return
 	}
 	out.ProbeCC = probeCC
 	out.Good = true
+}
+
+// Lookup performs a GeoIP lookup.
+func Lookup(settings *LookupSettings) *LookupResults {
+	var out LookupResults
+	LookupInto(settings, &out)
 	return &out
 }

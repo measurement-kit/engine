@@ -37,22 +37,21 @@ type ResubmitSettings struct {
 	Timeout int64
 }
 
-// Resubmit resubmits a measurement and returns the results.
-func Resubmit(settings *ResubmitSettings) *ResubmitResults {
+// ResubmitInto is like resubmit but takes the results as a pointer.
+func ResubmitInto(settings *ResubmitSettings, out *ResubmitResults) {
 	// Implementation note: here we basically run the normal nettest workflow
 	// except that the measurement result is known ahead of time.
-	var out ResubmitResults
 	var measurement model.Measurement
 	err := json.Unmarshal([]byte(settings.SerializedMeasurement), &measurement)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot unmarshal measurement: %s\n", err.Error())
-		return &out
+		return
 	}
 	var nettest nettest.Nettest
 	duration, err := internal.MakeTimeout(settings.Timeout)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot make duration: %s\n", err.Error())
-		return &out
+		return
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
 	defer cancel()
@@ -65,29 +64,35 @@ func Resubmit(settings *ResubmitSettings) *ResubmitResults {
 	err = nettest.DiscoverAvailableCollectors()
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot discover collectors: %s\n", err.Error())
-		return &out
+		return
 	}
 	for err := range nettest.OpenReport() {
 		out.Logs += fmt.Sprintf("cannot open report: %s\n", err.Error())
 	}
 	if nettest.Report.ID == "" {
 		out.Logs += fmt.Sprintf("empty report ID, assuming failure\n")
-		return &out
+		return
 	}
 	defer nettest.CloseReport()
 	measurement.ReportID = nettest.Report.ID
 	err = nettest.SubmitMeasurement(&measurement)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot submit measurement: %s\n", err.Error())
-		return &out
+		return
 	}
 	data, err := json.Marshal(measurement)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot marshal measurement: %s\n", err.Error())
-		return &out
+		return
 	}
 	out.UpdatedSerializedMeasurement = string(data)
 	out.UpdatedReportID = measurement.ReportID
 	out.Good = true
+}
+
+// Resubmit resubmits a measurement and returns the results.
+func Resubmit(settings *ResubmitSettings) *ResubmitResults {
+	var out ResubmitResults
+	ResubmitInto(settings, &out)
 	return &out
 }
