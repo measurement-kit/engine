@@ -325,7 +325,7 @@ func (nettest *Nettest) getAvailableBouncers() []model.Service {
 		return nettest.AvailableBouncers
 	}
 	return []model.Service{
-		model.Service{
+		{
 			Address: "https://bouncer.ooni.io",
 			Type:    "https",
 		},

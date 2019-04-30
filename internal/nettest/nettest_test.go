@@ -47,7 +47,7 @@ func TestDiscoverAvailableCollectorsFailure(t *testing.T) {
 	nettest := &Nettest{
 		Ctx: context.Background(),
 		AvailableBouncers: []model.Service{
-			model.Service{
+			{
 				Address: "httpo://42q7ug46dspcsvkw.onion",
 				Type:    "onion",
 			},
@@ -65,7 +65,7 @@ func TestDiscoverAvailableCollectorsQueryFailure(t *testing.T) {
 	nettest := &Nettest{
 		Ctx: context.Background(),
 		AvailableBouncers: []model.Service{
-			model.Service{
+			{
 				Address: "\t", // fail b/c URL is invalid
 				Type:    "https",
 			},
@@ -94,7 +94,7 @@ func TestDiscoverAvailableTestHelpersFailure(t *testing.T) {
 	nettest := &Nettest{
 		Ctx: context.Background(),
 		AvailableBouncers: []model.Service{
-			model.Service{
+			{
 				Address: "httpo://42q7ug46dspcsvkw.onion",
 				Type:    "onion",
 			},
@@ -112,7 +112,7 @@ func TestDiscoverAvailableTestHelpersQueryFailure(t *testing.T) {
 	nettest := &Nettest{
 		Ctx: context.Background(),
 		AvailableBouncers: []model.Service{
-			model.Service{
+			{
 				Address: "\t", // fail b/c URL is invalid
 				Type:    "https",
 			},
@@ -135,7 +135,7 @@ func TestOpenReportIntegration(t *testing.T) {
 		TestName:        "dummy",
 		TestVersion:     "0.0.1",
 		AvailableCollectors: []model.Service{
-			model.Service{
+			{
 				Address: "https://b.collector.ooni.io",
 				Type:    "https",
 			},
@@ -163,7 +163,7 @@ func TestOpenReportMultipleTimes(t *testing.T) {
 		TestName:        "dummy",
 		TestVersion:     "0.0.1",
 		AvailableCollectors: []model.Service{
-			model.Service{
+			{
 				Address: "https://b.collector.ooni.io",
 				Type:    "https",
 			},
@@ -195,7 +195,7 @@ func TestOpenReportNoCollector(t *testing.T) {
 	nettest := &Nettest{
 		Ctx: context.Background(),
 		AvailableCollectors: []model.Service{
-			model.Service{
+			{
 				Address: "httpo://42q7ug46dspcsvkw.onion",
 				Type:    "onion",
 			},
@@ -218,7 +218,7 @@ func TestOpenReportCollectorOpenError(t *testing.T) {
 	nettest := &Nettest{
 		Ctx: context.Background(),
 		AvailableCollectors: []model.Service{
-			model.Service{
+			{
 				Address: "\t", // fail b/c URL is invalid
 				Type:    "https",
 			},
