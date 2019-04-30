@@ -458,11 +458,16 @@ func (nettest *Nettest) StartMeasurement(
 	return outch
 }
 
+// updateReport allows to inject errors in tests
+var updateReport = func(ctx context.Context, r *collector.Report, m *model.Measurement) (string, error) {
+	return r.Update(ctx, *m)
+}
+
 // SubmitMeasurement submits a measurement to the selected collector. It is
 // safe to call this function from different goroutines concurrently as long
 // as the measurement is not shared by the goroutines.
 func (nettest *Nettest) SubmitMeasurement(measurement *model.Measurement) error {
-	measurementID, err := nettest.Report.Update(nettest.Ctx, *measurement)
+	measurementID, err := updateReport(nettest.Ctx, &nettest.Report, measurement)
 	if err != nil {
 		return err
 	}

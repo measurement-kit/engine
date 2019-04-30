@@ -1,8 +1,12 @@
 package engine
 
 import (
+	"errors"
 	"fmt"
 	"testing"
+
+	"github.com/measurement-kit/engine/internal/model"
+	"github.com/measurement-kit/engine/internal/nettest"
 )
 
 const origMeasurement = `{
@@ -25,7 +29,9 @@ const origMeasurement = `{
 	"test_version": "0.0.1"
 }`
 
-func TestSubmitIntegration(t *testing.T) {
+// TestCollectorSubmitIntegration covers the common case of submitting
+// a measurement to the OONI collector.
+func TestCollectorSubmitIntegration(t *testing.T) {
 	task := NewCollectorSubmitTask("ooniprobe-android", "2.1.0", origMeasurement)
 	results := task.Run()
 	fmt.Println(results.Logs())
@@ -34,4 +40,117 @@ func TestSubmitIntegration(t *testing.T) {
 	if !results.Good() {
 		t.Fatal("resubmission failed")
 	}
+}
+
+// TestCollectorSubmitExpectFailureV200 covers the case where we want
+// a measurement to fail because the client is ooniprobe-android v2.0.0.
+func TestCollectorSubmitExpectFailureV200(t *testing.T) {
+	task := NewCollectorSubmitTask("ooniprobe-android", "2.0.0", origMeasurement)
+	results := task.Run()
+	fmt.Println(results.Logs())
+	fmt.Println(results.UpdatedSerializedMeasurement())
+	fmt.Println(results.UpdatedReportID())
+	if results.Good() {
+		t.Fatal("we expected a failure here")
+	}
+}
+
+// TestCollectorSubmitConstructorAndSetters ensures that we can use
+// either the constructor or the setters to configure the task.
+func TestCollectorSubmitConstructorAndSetters(t *testing.T) {
+	task := NewCollectorSubmitTask("ooniprobe-android", "2.0.0", origMeasurement)
+	if task.softwareName != "ooniprobe-android" {
+		t.Fatal("the constructor cannot set the softwareName")
+	}
+	if task.softwareVersion != "2.0.0" {
+		t.Fatal("the constructor cannot set the softwareVersion")
+	}
+	if task.serializedMeasurement != origMeasurement {
+		t.Fatal("the constructor cannot set the serializedMeasurement")
+	}
+	if task.timeout != defaultTimeout {
+		t.Fatal("the constructor cannot set the timeout")
+	}
+	task.SetSoftwareName("foobar")
+	if task.softwareName != "foobar" {
+		t.Fatal("SetSoftwareName does not work")
+	}
+	task.SetSoftwareVersion("1.0.0")
+	if task.softwareVersion != "1.0.0" {
+		t.Fatal("SetSoftwareVersion does not work")
+	}
+	task.SetSerializedMeasurement("{}")
+	if task.serializedMeasurement != "{}" {
+		t.Fatal("SetSerializedMeasurement does not work")
+	}
+	task.SetTimeout(int64(1))
+	if task.timeout != int64(1) {
+		t.Fatal("SetTimeout does not work")
+	}
+}
+
+// TestCollectorSubmitUnmarshalError covers the case where we're
+// passed an invalid serialized JSON.
+func TestCollectorSubmitUnmarshalError(t *testing.T) {
+	task := NewCollectorSubmitTask("ooniprobe-android", "2.1.0", "{")
+	results := task.Run()
+	if results.Good() {
+		t.Fatal("We expected a failure here")
+	}
+}
+
+// TestCollectorSubmitInvalidTimeout covers the case where we're
+// passed an invalid timeout value.
+func TestCollectorSubmitInvalidTimeout(t *testing.T) {
+	task := NewCollectorSubmitTask("ooniprobe-android", "2.1.0", origMeasurement)
+	task.SetTimeout(-1)
+	results := task.Run()
+	if results.Good() {
+		t.Fatal("We expected a failure here")
+	}
+}
+
+// TestCollectorSubmitDiscoverFailure covers the case where there
+// is a failure when discovering available collectors.
+func TestCollectorSubmitDiscoverFailure(t *testing.T) {
+	savedFunc := discoverAvailableCollectors
+	discoverAvailableCollectors = func(nt *nettest.Nettest) error {
+		return errors.New("mocked error")
+	}
+	task := NewCollectorSubmitTask("ooniprobe-android", "2.1.0", origMeasurement)
+	results := task.Run()
+	if results.Good() {
+		t.Fatal("We expected a failure here")
+	}
+	discoverAvailableCollectors = savedFunc
+}
+
+// TestCollectorSubmitSubmitFailure covers the case where there
+// is a failure when submitting the actual measurement.
+func TestCollectorSubmitSubmitFailure(t *testing.T) {
+	savedFunc := submitMeasurement
+	submitMeasurement = func(nt *nettest.Nettest, m *model.Measurement) error {
+		return errors.New("mocked error")
+	}
+	task := NewCollectorSubmitTask("ooniprobe-android", "2.1.0", origMeasurement)
+	results := task.Run()
+	if results.Good() {
+		t.Fatal("We expected a failure here")
+	}
+	submitMeasurement = savedFunc
+}
+
+// TestCollectorSubmitMarshalFailure covers the case where there
+// is a failure when marshalling the updated measurement.
+func TestCollectorSubmitMarshalFailure(t *testing.T) {
+	savedFunc := jsonMarshal
+	jsonMarshal = func(m *model.Measurement) ([]byte, error) {
+		return nil, errors.New("mocked error")
+	}
+	task := NewCollectorSubmitTask("ooniprobe-android", "2.1.0", origMeasurement)
+	results := task.Run()
+	if results.Good() {
+		t.Fatal("We expected a failure here")
+	}
+	jsonMarshal = savedFunc
 }

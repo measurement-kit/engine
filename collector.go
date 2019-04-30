@@ -82,6 +82,21 @@ func (t *CollectorSubmitTask) SetTimeout(timeout int64) {
 	t.timeout = timeout
 }
 
+// discoverAvailableCollectors allows to simulate errors in unit tests.
+var discoverAvailableCollectors = func(nt *nettest.Nettest) error {
+	return nt.DiscoverAvailableCollectors()
+}
+
+// submitMeasurement allows to simulate errors in unit tests.
+var submitMeasurement = func(nt *nettest.Nettest, m *model.Measurement) error {
+	return nt.SubmitMeasurement(m)
+}
+
+// jsonMarshal allows to simulate errors in unit tests.
+var jsonMarshal = func(m *model.Measurement) ([]byte, error) {
+	return json.Marshal(*m)
+}
+
 func (t *CollectorSubmitTask) runWithResults(out *CollectorSubmitResults) {
 	// Implementation note: here we basically run the normal nettest workflow
 	// except that the measurement result is known ahead of time.
@@ -105,7 +120,7 @@ func (t *CollectorSubmitTask) runWithResults(out *CollectorSubmitResults) {
 	nettest.SoftwareName = t.softwareName
 	nettest.SoftwareVersion = t.softwareVersion
 	nettest.TestStartTime = measurement.TestStartTime
-	err = nettest.DiscoverAvailableCollectors()
+	err = discoverAvailableCollectors(&nettest)
 	if err != nil {
 		out.logs = fmt.Sprintf("cannot discover collectors: %s\n", err.Error())
 		return
@@ -119,12 +134,12 @@ func (t *CollectorSubmitTask) runWithResults(out *CollectorSubmitResults) {
 	}
 	defer nettest.CloseReport()
 	measurement.ReportID = nettest.Report.ID
-	err = nettest.SubmitMeasurement(&measurement)
+	err = submitMeasurement(&nettest, &measurement)
 	if err != nil {
 		out.logs = fmt.Sprintf("cannot submit measurement: %s\n", err.Error())
 		return
 	}
-	data, err := json.Marshal(measurement)
+	data, err := jsonMarshal(&measurement)
 	if err != nil {
 		out.logs = fmt.Sprintf("cannot marshal measurement: %s\n", err.Error())
 		return
