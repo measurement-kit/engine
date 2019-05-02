@@ -2,4 +2,5 @@
 
 # Measurement Kit engine written in Go
 
-This repository contains a Measurement Kit engine written in Go.
+This repository contains a Measurement Kit engine written in Go. The design
+of this engine is described in [DESIGN.md](DESIGN.md).
