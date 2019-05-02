@@ -2,8 +2,12 @@
 
 # Measurement Kit engine written in Go
 
-This repository contains a Measurement Kit engine written in Go. The design
-is described in [DESIGN.md](DESIGN.md).
+This repository contains a Measurement Kit engine written in Go. We currently
+only implement functionality that it is more practical to directly implement
+in Go. See the [design document](DESIGN.md) for a descriptions of the rationale
+and design of this repository, as well as for a discussion of the relationship
+between this engine and [the main MK engine in C++](
+https://github.com/measurement-kit/measurement-kit).
 
 You can easily integrate this repository into your Go code as usual by
 adding a
