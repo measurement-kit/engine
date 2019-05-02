@@ -2,14 +2,15 @@
 
 # Measurement Kit engine written in Go
 
-This repository contains a Measurement Kit engine written in Go. We currently
-only implement functionality that it is more practical to directly implement
-in Go. See the [design document](DESIGN.md) for a descriptions of the rationale
-and design of this repository, as well as for a discussion of the relationship
-between this engine, [the main MK engine in C++](
-https://github.com/measurement-kit/measurement-kit), and the Measurement Kit
-[Android](https://github.com/measurement-kit/android-libs) and
-[iOS](https://github.com/measurement-kit/mkall-ios) APIs.
+This repository contains a Measurement Kit engine written in Go.
+We currently only implement functionality that it is more practical
+to directly implement in Go (e.g. the Psiphon nettest). See the
+[design document](DESIGN.md) for a descriptions of the rationale
+and design of this repository, as well as for a discussion of the
+relationship between this engine, [the main MK engine in C++](
+https://github.com/measurement-kit/measurement-kit), and the
+Measurement Kit [Android](https://github.com/measurement-kit/android-libs)
+and [iOS](https://github.com/measurement-kit/mkall-ios) APIs.
 
 You can easily integrate this repository into your Go code as usual by
 adding a
