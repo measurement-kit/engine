@@ -3,10 +3,17 @@
 # Measurement Kit engine written in Go
 
 This repository contains a Measurement Kit engine written in Go. The design
-of this engine is described in [DESIGN.md](DESIGN.md).
+is described in [DESIGN.md](DESIGN.md).
 
 You can easily integrate this repository into your Go code as usual by
-adding a `import "github.com/measurement-kit/engine"` statement.
+adding a
+
+```Go
+import "github.com/measurement-kit/engine"
+```
+
+statement to your Go code. Make sure you have set the `GOPATH` environment
+variable, or just use the new Go modules feature.
 
 You can build an AAR for Android using
 
