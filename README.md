@@ -13,7 +13,7 @@ import "github.com/measurement-kit/engine"
 ```
 
 statement to your Go code. Make sure you have set the `GOPATH` environment
-variable, or just use the new Go modules feature.
+variable, or use Go modules.
 
 You can build an AAR for Android using
 
