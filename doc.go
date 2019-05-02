@@ -1,4 +1,2 @@
-// Package engine implements the Measurement Kit API.
-//
-// See https://github.com/measurement-kit/api.
+// Package engine is a Measurement Kit engine written in Go.
 package engine
