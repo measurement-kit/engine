@@ -33,5 +33,5 @@ In a similar fashion
 ./mobile/ios/build.bash
 ```
 
-will generate a `MKEngine.framework` for iOS devices. For this to
+will generate a framework for iOS devices. For this to
 work, you must be running macOS and have Xcode installed.
