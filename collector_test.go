@@ -34,10 +34,10 @@ const origMeasurement = `{
 func TestCollectorSubmitIntegration(t *testing.T) {
 	task := NewCollectorSubmitTask("ooniprobe-android", "2.1.0", origMeasurement)
 	results := task.Run()
-	fmt.Println(results.Logs())
-	fmt.Println(results.UpdatedSerializedMeasurement())
-	fmt.Println(results.UpdatedReportID())
-	if !results.Good() {
+	fmt.Println(results.Logs)
+	fmt.Println(results.UpdatedSerializedMeasurement)
+	fmt.Println(results.UpdatedReportID)
+	if !results.Good {
 		t.Fatal("resubmission failed")
 	}
 }
@@ -47,10 +47,10 @@ func TestCollectorSubmitIntegration(t *testing.T) {
 func TestCollectorSubmitExpectFailureV200(t *testing.T) {
 	task := NewCollectorSubmitTask("ooniprobe-android", "2.0.0", origMeasurement)
 	results := task.Run()
-	fmt.Println(results.Logs())
-	fmt.Println(results.UpdatedSerializedMeasurement())
-	fmt.Println(results.UpdatedReportID())
-	if results.Good() {
+	fmt.Println(results.Logs)
+	fmt.Println(results.UpdatedSerializedMeasurement)
+	fmt.Println(results.UpdatedReportID)
+	if results.Good {
 		t.Fatal("we expected a failure here")
 	}
 }
@@ -59,33 +59,17 @@ func TestCollectorSubmitExpectFailureV200(t *testing.T) {
 // either the constructor or the setters to configure the task.
 func TestCollectorSubmitConstructorAndSetters(t *testing.T) {
 	task := NewCollectorSubmitTask("ooniprobe-android", "2.0.0", origMeasurement)
-	if task.softwareName != "ooniprobe-android" {
+	if task.SoftwareName != "ooniprobe-android" {
 		t.Fatal("the constructor cannot set the softwareName")
 	}
-	if task.softwareVersion != "2.0.0" {
+	if task.SoftwareVersion != "2.0.0" {
 		t.Fatal("the constructor cannot set the softwareVersion")
 	}
-	if task.serializedMeasurement != origMeasurement {
+	if task.SerializedMeasurement != origMeasurement {
 		t.Fatal("the constructor cannot set the serializedMeasurement")
 	}
-	if task.timeout != defaultTimeout {
+	if task.Timeout != defaultTimeout {
 		t.Fatal("the constructor cannot set the timeout")
-	}
-	task.SetSoftwareName("foobar")
-	if task.softwareName != "foobar" {
-		t.Fatal("SetSoftwareName does not work")
-	}
-	task.SetSoftwareVersion("1.0.0")
-	if task.softwareVersion != "1.0.0" {
-		t.Fatal("SetSoftwareVersion does not work")
-	}
-	task.SetSerializedMeasurement("{}")
-	if task.serializedMeasurement != "{}" {
-		t.Fatal("SetSerializedMeasurement does not work")
-	}
-	task.SetTimeout(int64(1))
-	if task.timeout != int64(1) {
-		t.Fatal("SetTimeout does not work")
 	}
 }
 
@@ -94,7 +78,7 @@ func TestCollectorSubmitConstructorAndSetters(t *testing.T) {
 func TestCollectorSubmitUnmarshalError(t *testing.T) {
 	task := NewCollectorSubmitTask("ooniprobe-android", "2.1.0", "{")
 	results := task.Run()
-	if results.Good() {
+	if results.Good {
 		t.Fatal("We expected a failure here")
 	}
 }
@@ -103,9 +87,9 @@ func TestCollectorSubmitUnmarshalError(t *testing.T) {
 // passed an invalid timeout value.
 func TestCollectorSubmitInvalidTimeout(t *testing.T) {
 	task := NewCollectorSubmitTask("ooniprobe-android", "2.1.0", origMeasurement)
-	task.SetTimeout(-1)
+	task.Timeout = -1
 	results := task.Run()
-	if results.Good() {
+	if results.Good {
 		t.Fatal("We expected a failure here")
 	}
 }
@@ -119,7 +103,7 @@ func TestCollectorSubmitDiscoverFailure(t *testing.T) {
 	}
 	task := NewCollectorSubmitTask("ooniprobe-android", "2.1.0", origMeasurement)
 	results := task.Run()
-	if results.Good() {
+	if results.Good {
 		t.Fatal("We expected a failure here")
 	}
 	discoverAvailableCollectors = savedFunc
@@ -134,7 +118,7 @@ func TestCollectorSubmitSubmitFailure(t *testing.T) {
 	}
 	task := NewCollectorSubmitTask("ooniprobe-android", "2.1.0", origMeasurement)
 	results := task.Run()
-	if results.Good() {
+	if results.Good {
 		t.Fatal("We expected a failure here")
 	}
 	submitMeasurement = savedFunc
@@ -149,7 +133,7 @@ func TestCollectorSubmitMarshalFailure(t *testing.T) {
 	}
 	task := NewCollectorSubmitTask("ooniprobe-android", "2.1.0", origMeasurement)
 	results := task.Run()
-	if results.Good() {
+	if results.Good {
 		t.Fatal("We expected a failure here")
 	}
 	jsonMarshal = savedFunc

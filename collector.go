@@ -13,39 +13,33 @@ import (
 // CollectorSubmitResults contains the results of submitting or resubmitting
 // a measurement to the OONI collector.
 type CollectorSubmitResults struct {
-	good                         bool
-	updatedSerializedMeasurement string
-	updatedReportID              string
-	logs                         string
-}
+	// Good indicates whether we succeeded or not.
+	Good bool
 
-// Good returns whether we succeeded or not.
-func (r *CollectorSubmitResults) Good() bool {
-	return r.good
-}
+	// UpdatedSerializedMeasurement returns the measurement with updated fields.
+	UpdatedSerializedMeasurement string
 
-// Logs returns logs useful for debugging.
-func (r *CollectorSubmitResults) Logs() string {
-	return r.logs
-}
+	// UpdatedReportID returns the updated report ID.
+	UpdatedReportID string
 
-// UpdatedReportID returns the updated report ID.
-func (r *CollectorSubmitResults) UpdatedReportID() string {
-	return r.updatedReportID
-}
-
-// UpdatedSerializedMeasurement returns the measurement with updated fields.
-func (r *CollectorSubmitResults) UpdatedSerializedMeasurement() string {
-	return r.updatedSerializedMeasurement
+	// Logs returns logs useful for debugging.
+	Logs string
 }
 
 // CollectorSubmitTask is a synchronous task for submitting or resubmitting a
 // specific OONI measurement to the OONI collector.
 type CollectorSubmitTask struct {
-	serializedMeasurement string
-	softwareName          string
-	softwareVersion       string
-	timeout               int64
+	// SerializedMeasurement is the measurement to submit.
+	SerializedMeasurement string
+
+	// SoftwareName is the name of the software submitting the measurement.
+	SoftwareName string
+
+	// SoftwareVersion is the name of the software submitting the measurement.
+	SoftwareVersion string
+
+	// Timeout is the number of seconds after which we abort submitting.
+	Timeout int64
 }
 
 // defaultTimeout is the default timeout in seconds.
@@ -55,31 +49,11 @@ var defaultTimeout int64 = 30
 // software name, software version, and serialized measurement fields.
 func NewCollectorSubmitTask(swName, swVersion, measurement string) *CollectorSubmitTask {
 	return &CollectorSubmitTask{
-		serializedMeasurement: measurement,
-		softwareName:          swName,
-		softwareVersion:       swVersion,
-		timeout:               defaultTimeout,
+		SerializedMeasurement: measurement,
+		SoftwareName:          swName,
+		SoftwareVersion:       swVersion,
+		Timeout:               defaultTimeout,
 	}
-}
-
-// SetSerializedMeasurement sets the measurement to submit.
-func (t *CollectorSubmitTask) SetSerializedMeasurement(measurement string) {
-	t.serializedMeasurement = measurement
-}
-
-// SetSoftwareName sets the name of the software submitting the measurement.
-func (t *CollectorSubmitTask) SetSoftwareName(softwareName string) {
-	t.softwareName = softwareName
-}
-
-// SetSoftwareVersion sets the name of the software submitting the measurement.
-func (t *CollectorSubmitTask) SetSoftwareVersion(softwareVersion string) {
-	t.softwareVersion = softwareVersion
-}
-
-// SetTimeout sets the number of seconds after which we abort submitting.
-func (t *CollectorSubmitTask) SetTimeout(timeout int64) {
-	t.timeout = timeout
 }
 
 // discoverAvailableCollectors allows to simulate errors in unit tests.
@@ -101,15 +75,15 @@ func (t *CollectorSubmitTask) runWithResults(out *CollectorSubmitResults) {
 	// Implementation note: here we basically run the normal nettest workflow
 	// except that the measurement result is known ahead of time.
 	var measurement model.Measurement
-	err := json.Unmarshal([]byte(t.serializedMeasurement), &measurement)
+	err := json.Unmarshal([]byte(t.SerializedMeasurement), &measurement)
 	if err != nil {
-		out.logs = fmt.Sprintf("cannot unmarshal measurement: %s\n", err.Error())
+		out.Logs = fmt.Sprintf("cannot unmarshal measurement: %s\n", err.Error())
 		return
 	}
 	var nettest nettest.Nettest
-	duration, err := internal.MakeTimeout(t.timeout)
+	duration, err := internal.MakeTimeout(t.Timeout)
 	if err != nil {
-		out.logs = fmt.Sprintf("cannot make duration: %s\n", err.Error())
+		out.Logs = fmt.Sprintf("cannot make duration: %s\n", err.Error())
 		return
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
@@ -117,36 +91,36 @@ func (t *CollectorSubmitTask) runWithResults(out *CollectorSubmitResults) {
 	nettest.Ctx = ctx
 	nettest.TestName = measurement.TestName
 	nettest.TestVersion = measurement.TestVersion
-	nettest.SoftwareName = t.softwareName
-	nettest.SoftwareVersion = t.softwareVersion
+	nettest.SoftwareName = t.SoftwareName
+	nettest.SoftwareVersion = t.SoftwareVersion
 	nettest.TestStartTime = measurement.TestStartTime
 	err = discoverAvailableCollectors(&nettest)
 	if err != nil {
-		out.logs = fmt.Sprintf("cannot discover collectors: %s\n", err.Error())
+		out.Logs = fmt.Sprintf("cannot discover collectors: %s\n", err.Error())
 		return
 	}
 	for err := range nettest.OpenReport() {
-		out.logs += fmt.Sprintf("cannot open report: %s\n", err.Error())
+		out.Logs += fmt.Sprintf("cannot open report: %s\n", err.Error())
 	}
 	if nettest.Report.ID == "" {
-		out.logs += fmt.Sprintf("empty report ID, assuming failure\n")
+		out.Logs += fmt.Sprintf("empty report ID, assuming failure\n")
 		return
 	}
 	defer nettest.CloseReport()
 	measurement.ReportID = nettest.Report.ID
 	err = submitMeasurement(&nettest, &measurement)
 	if err != nil {
-		out.logs = fmt.Sprintf("cannot submit measurement: %s\n", err.Error())
+		out.Logs = fmt.Sprintf("cannot submit measurement: %s\n", err.Error())
 		return
 	}
 	data, err := jsonMarshal(&measurement)
 	if err != nil {
-		out.logs = fmt.Sprintf("cannot marshal measurement: %s\n", err.Error())
+		out.Logs = fmt.Sprintf("cannot marshal measurement: %s\n", err.Error())
 		return
 	}
-	out.updatedSerializedMeasurement = string(data)
-	out.updatedReportID = measurement.ReportID
-	out.good = true
+	out.UpdatedSerializedMeasurement = string(data)
+	out.UpdatedReportID = measurement.ReportID
+	out.Good = true
 }
 
 // Run submits (or resubmits) a measurement and returns the results.
