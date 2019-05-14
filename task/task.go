@@ -11,23 +11,31 @@ import (
 	"github.com/measurement-kit/engine/model"
 )
 
-// Config contains the task settings
+// Config contains the task settings.
 type Config struct {
-	// Inputs is the list of inputs for the measurement task
+	// Inputs is the list of inputs for the measurement task.
 	Inputs []string
+
+	// NoBouncer indicates whether we should not use the bouncer.
+	NoBouncer bool
+
+	// NoCollector indicates whether we should not use the collector.
+	NoCollector bool
 }
 
 func discoverAvailableCollectors(
 	ctx context.Context, nt *nettest.Nettest,
 	config Config, out chan<- model.Event,
 ) error {
-	out <- model.NewLogInfoEvent("discovering available collectors")
-	err := nt.DiscoverAvailableCollectors(ctx)
-	if err != nil {
-		out <- model.NewLogWarningEvent(
-			err, "cannot discover available collectors",
-		)
-		return err
+	if !config.NoBouncer {
+		out <- model.NewLogInfoEvent("discovering available collectors")
+		err := nt.DiscoverAvailableCollectors(ctx)
+		if err != nil {
+			out <- model.NewLogWarningEvent(
+				err, "cannot discover available collectors",
+			)
+			return err
+		}
 	}
 	return nil
 }
@@ -36,13 +44,15 @@ func discoverAvailableTestHelpers(
 	ctx context.Context, nt *nettest.Nettest,
 	config Config, out chan<- model.Event,
 ) error {
-	out <- model.NewLogInfoEvent("discovering available test helpers")
-	err := nt.DiscoverAvailableTestHelpers(ctx)
-	if err != nil {
-		out <- model.NewLogWarningEvent(
-			err, "cannot discover available test helpers",
-		)
-		return err
+	if !config.NoBouncer {
+		out <- model.NewLogInfoEvent("discovering available test helpers")
+		err := nt.DiscoverAvailableTestHelpers(ctx)
+		if err != nil {
+			out <- model.NewLogWarningEvent(
+				err, "cannot discover available test helpers",
+			)
+			return err
+		}
 	}
 	return nil
 }
@@ -51,17 +61,19 @@ func openReport(
 	ctx context.Context, nt *nettest.Nettest,
 	config Config, out chan<- model.Event,
 ) error {
-	out <- model.NewLogInfoEvent("opening report")
-	for err := range nt.OpenReport(ctx) {
-		out <- model.NewLogWarningEvent(
-			err, "cannot open report; trying other collectors",
-		)
-	}
-	if nt.Report.ID == "" {
-		out <- model.NewLogWarningEvent(
-			nil, "failed to open report with all collectors",
-		)
-		return errors.New("cannot open report")
+	if !config.NoCollector {
+		out <- model.NewLogInfoEvent("opening report")
+		for err := range nt.OpenReport(ctx) {
+			out <- model.NewLogWarningEvent(
+				err, "cannot open report; trying other collectors",
+			)
+		}
+		if nt.Report.ID == "" {
+			out <- model.NewLogWarningEvent(
+				nil, "failed to open report with all collectors",
+			)
+			return errors.New("cannot open report")
+		}
 	}
 	return nil
 }
@@ -99,15 +111,17 @@ func submitMeasurement(
 	ctx context.Context, nt *nettest.Nettest,
 	config Config, out chan<- model.Event, measurement model.Measurement,
 ) error {
-	out <- model.NewLogInfoEvent("submitting the measurement")
-	err := nt.SubmitMeasurement(ctx, &measurement)
-	if err != nil {
-		out <- model.NewLogWarningEvent(
-			err, "failed to submit the measurement",
-		)
-		return err
+	if !config.NoCollector {
+		out <- model.NewLogInfoEvent("submitting the measurement")
+		err := nt.SubmitMeasurement(ctx, &measurement)
+		if err != nil {
+			out <- model.NewLogWarningEvent(
+				err, "failed to submit the measurement",
+			)
+			return err
+		}
+		out <- model.NewLogInfoEvent("measurement submitted")
 	}
-	out <- model.NewLogInfoEvent("measurement submitted")
 	return nil
 }
 
@@ -126,6 +140,12 @@ func performEmitAndSubmitMeasurement(
 	err = submitMeasurement(ctx, nt, config, out, measurement)
 	if err != nil {
 		return
+	}
+}
+
+func closeReport(ctx context.Context, nt *nettest.Nettest, config Config) {
+	if !config.NoCollector {
+		nt.CloseReport(ctx)
 	}
 }
 
@@ -151,7 +171,7 @@ func performTask(
 	if err != nil {
 		return
 	}
-	defer nt.CloseReport(ctx)
+	defer closeReport(ctx, nt, config)
 	// TODO(bassosimone): implement parallelism
 	for _, input := range config.Inputs {
 		performEmitAndSubmitMeasurement(ctx, nt, config, out, input)
