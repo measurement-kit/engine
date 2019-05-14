@@ -47,7 +47,7 @@ func run(
 	for ev := range ch {
 		testkeys.Download = append(testkeys.Download, ev)
 		out <- model.Event{
-			Key:   "measurement",
+			Key:   "ndt7.download",
 			Value: ev,
 		}
 	}
@@ -60,7 +60,7 @@ func run(
 	for ev := range ch {
 		testkeys.Upload = append(testkeys.Upload, ev)
 		out <- model.Event{
-			Key:   "measurement",
+			Key:   "ndt7.upload",
 			Value: ev,
 		}
 	}
