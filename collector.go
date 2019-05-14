@@ -57,13 +57,13 @@ func NewCollectorSubmitTask(swName, swVersion, measurement string) *CollectorSub
 }
 
 // discoverAvailableCollectors allows to simulate errors in unit tests.
-var discoverAvailableCollectors = func(nt *nettest.Nettest) error {
-	return nt.DiscoverAvailableCollectors()
+var discoverAvailableCollectors = func(ctx context.Context, nt *nettest.Nettest) error {
+	return nt.DiscoverAvailableCollectors(ctx)
 }
 
 // submitMeasurement allows to simulate errors in unit tests.
-var submitMeasurement = func(nt *nettest.Nettest, m *model.Measurement) error {
-	return nt.SubmitMeasurement(m)
+var submitMeasurement = func(ctx context.Context, nt *nettest.Nettest, m *model.Measurement) error {
+	return nt.SubmitMeasurement(ctx, m)
 }
 
 // jsonMarshal allows to simulate errors in unit tests.
@@ -88,27 +88,26 @@ func (t *CollectorSubmitTask) runWithResults(out *CollectorSubmitResults) {
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), duration)
 	defer cancel()
-	nettest.Ctx = ctx
 	nettest.TestName = measurement.TestName
 	nettest.TestVersion = measurement.TestVersion
 	nettest.SoftwareName = t.SoftwareName
 	nettest.SoftwareVersion = t.SoftwareVersion
 	nettest.TestStartTime = measurement.TestStartTime
-	err = discoverAvailableCollectors(&nettest)
+	err = discoverAvailableCollectors(ctx, &nettest)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot discover collectors: %s\n", err.Error())
 		return
 	}
-	for err := range nettest.OpenReport() {
+	for err := range nettest.OpenReport(ctx) {
 		out.Logs += fmt.Sprintf("cannot open report: %s\n", err.Error())
 	}
 	if nettest.Report.ID == "" {
 		out.Logs += fmt.Sprintf("empty report ID, assuming failure\n")
 		return
 	}
-	defer nettest.CloseReport()
+	defer nettest.CloseReport(ctx)
 	measurement.ReportID = nettest.Report.ID
-	err = submitMeasurement(&nettest, &measurement)
+	err = submitMeasurement(ctx, &nettest, &measurement)
 	if err != nil {
 		out.Logs = fmt.Sprintf("cannot submit measurement: %s\n", err.Error())
 		return

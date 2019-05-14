@@ -1,6 +1,7 @@
 package engine
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"testing"
@@ -98,7 +99,7 @@ func TestCollectorSubmitInvalidTimeout(t *testing.T) {
 // is a failure when discovering available collectors.
 func TestCollectorSubmitDiscoverFailure(t *testing.T) {
 	savedFunc := discoverAvailableCollectors
-	discoverAvailableCollectors = func(nt *nettest.Nettest) error {
+	discoverAvailableCollectors = func(ctx context.Context, nt *nettest.Nettest) error {
 		return errors.New("mocked error")
 	}
 	task := NewCollectorSubmitTask("ooniprobe-android", "2.1.0", origMeasurement)
@@ -113,7 +114,7 @@ func TestCollectorSubmitDiscoverFailure(t *testing.T) {
 // is a failure when submitting the actual measurement.
 func TestCollectorSubmitSubmitFailure(t *testing.T) {
 	savedFunc := submitMeasurement
-	submitMeasurement = func(nt *nettest.Nettest, m *model.Measurement) error {
+	submitMeasurement = func(ctx context.Context, nt *nettest.Nettest, m *model.Measurement) error {
 		return errors.New("mocked error")
 	}
 	task := NewCollectorSubmitTask("ooniprobe-android", "2.1.0", origMeasurement)

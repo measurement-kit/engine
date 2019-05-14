@@ -18,7 +18,6 @@ func TestGetAvailableBouncersDefault(t *testing.T) {
 		Type:    "b",
 	}
 	nettest := &Nettest{
-		Ctx:               context.Background(),
 		AvailableBouncers: []model.Service{svc},
 	}
 	svcs := nettest.getAvailableBouncers()
@@ -32,10 +31,8 @@ func TestGetAvailableBouncersDefault(t *testing.T) {
 
 // TestDiscoverAvailableCollectorsIntegration discovers available collectors.
 func TestDiscoverAvailableCollectorsIntegration(t *testing.T) {
-	nettest := &Nettest{
-		Ctx: context.Background(),
-	}
-	err := nettest.DiscoverAvailableCollectors()
+	nettest := &Nettest{}
+	err := nettest.DiscoverAvailableCollectors(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -45,7 +42,6 @@ func TestDiscoverAvailableCollectorsIntegration(t *testing.T) {
 // where we cannot discover any available collector.
 func TestDiscoverAvailableCollectorsFailure(t *testing.T) {
 	nettest := &Nettest{
-		Ctx: context.Background(),
 		AvailableBouncers: []model.Service{
 			{
 				Address: "httpo://42q7ug46dspcsvkw.onion",
@@ -53,7 +49,7 @@ func TestDiscoverAvailableCollectorsFailure(t *testing.T) {
 			},
 		},
 	}
-	err := nettest.DiscoverAvailableCollectors()
+	err := nettest.DiscoverAvailableCollectors(context.Background())
 	if err == nil {
 		t.Fatal("We expected a failure here")
 	}
@@ -63,7 +59,6 @@ func TestDiscoverAvailableCollectorsFailure(t *testing.T) {
 // where we fail in querying the bouncer.
 func TestDiscoverAvailableCollectorsQueryFailure(t *testing.T) {
 	nettest := &Nettest{
-		Ctx: context.Background(),
 		AvailableBouncers: []model.Service{
 			{
 				Address: "\t", // fail b/c URL is invalid
@@ -71,7 +66,7 @@ func TestDiscoverAvailableCollectorsQueryFailure(t *testing.T) {
 			},
 		},
 	}
-	err := nettest.DiscoverAvailableCollectors()
+	err := nettest.DiscoverAvailableCollectors(context.Background())
 	if err == nil {
 		t.Fatal("We expected a failure here")
 	}
@@ -79,10 +74,8 @@ func TestDiscoverAvailableCollectorsQueryFailure(t *testing.T) {
 
 // TestDiscoverAvailableTestHelpersIntegration discovers available test helpers.
 func TestDiscoverAvailableTestHelpersIntegration(t *testing.T) {
-	nettest := &Nettest{
-		Ctx: context.Background(),
-	}
-	err := nettest.DiscoverAvailableTestHelpers()
+	nettest := &Nettest{}
+	err := nettest.DiscoverAvailableTestHelpers(context.Background())
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -92,7 +85,6 @@ func TestDiscoverAvailableTestHelpersIntegration(t *testing.T) {
 // where we cannot discover any available test helper.
 func TestDiscoverAvailableTestHelpersFailure(t *testing.T) {
 	nettest := &Nettest{
-		Ctx: context.Background(),
 		AvailableBouncers: []model.Service{
 			{
 				Address: "httpo://42q7ug46dspcsvkw.onion",
@@ -100,7 +92,7 @@ func TestDiscoverAvailableTestHelpersFailure(t *testing.T) {
 			},
 		},
 	}
-	err := nettest.DiscoverAvailableTestHelpers()
+	err := nettest.DiscoverAvailableTestHelpers(context.Background())
 	if err == nil {
 		t.Fatal("We expected a failure here")
 	}
@@ -110,7 +102,6 @@ func TestDiscoverAvailableTestHelpersFailure(t *testing.T) {
 // where we fail in querying the bouncer.
 func TestDiscoverAvailableTestHelpersQueryFailure(t *testing.T) {
 	nettest := &Nettest{
-		Ctx: context.Background(),
 		AvailableBouncers: []model.Service{
 			{
 				Address: "\t", // fail b/c URL is invalid
@@ -118,7 +109,7 @@ func TestDiscoverAvailableTestHelpersQueryFailure(t *testing.T) {
 			},
 		},
 	}
-	err := nettest.DiscoverAvailableTestHelpers()
+	err := nettest.DiscoverAvailableTestHelpers(context.Background())
 	if err == nil {
 		t.Fatal("We expected a failure here")
 	}
@@ -127,7 +118,6 @@ func TestDiscoverAvailableTestHelpersQueryFailure(t *testing.T) {
 // TestOpenReportIntegration opens a report.
 func TestOpenReportIntegration(t *testing.T) {
 	nettest := &Nettest{
-		Ctx:             context.Background(),
 		ProbeASN:        "AS0",
 		ProbeCC:         "ZZ",
 		SoftwareName:    "MKEngine",
@@ -141,7 +131,7 @@ func TestOpenReportIntegration(t *testing.T) {
 			},
 		},
 	}
-	for err := range nettest.OpenReport() {
+	for err := range nettest.OpenReport(context.Background()) {
 		if err != nil {
 			t.Log(err)
 		}
@@ -155,7 +145,6 @@ func TestOpenReportIntegration(t *testing.T) {
 // open an already openned report.
 func TestOpenReportMultipleTimes(t *testing.T) {
 	nettest := &Nettest{
-		Ctx:             context.Background(),
 		ProbeASN:        "AS0",
 		ProbeCC:         "ZZ",
 		SoftwareName:    "MKEngine",
@@ -169,7 +158,8 @@ func TestOpenReportMultipleTimes(t *testing.T) {
 			},
 		},
 	}
-	for err := range nettest.OpenReport() {
+	ctx := context.Background()
+	for err := range nettest.OpenReport(ctx) {
 		if err != nil {
 			t.Log(err)
 		}
@@ -178,7 +168,7 @@ func TestOpenReportMultipleTimes(t *testing.T) {
 		t.Fatal("OpenReport: failed")
 	}
 	reportID := nettest.Report.ID
-	for err := range nettest.OpenReport() {
+	for err := range nettest.OpenReport(ctx) {
 		if err != nil {
 			t.Log(err)
 		}
@@ -193,7 +183,6 @@ func TestOpenReportMultipleTimes(t *testing.T) {
 // that we know how to handle.
 func TestOpenReportNoCollector(t *testing.T) {
 	nettest := &Nettest{
-		Ctx: context.Background(),
 		AvailableCollectors: []model.Service{
 			{
 				Address: "httpo://42q7ug46dspcsvkw.onion",
@@ -201,7 +190,7 @@ func TestOpenReportNoCollector(t *testing.T) {
 			},
 		},
 	}
-	for err := range nettest.OpenReport() {
+	for err := range nettest.OpenReport(context.Background()) {
 		if err != nil {
 			t.Log(err)
 		}
@@ -216,7 +205,6 @@ func TestOpenReportNoCollector(t *testing.T) {
 // errors when attempting to open a report.
 func TestOpenReportCollectorOpenError(t *testing.T) {
 	nettest := &Nettest{
-		Ctx: context.Background(),
 		AvailableCollectors: []model.Service{
 			{
 				Address: "\t", // fail b/c URL is invalid
@@ -224,7 +212,7 @@ func TestOpenReportCollectorOpenError(t *testing.T) {
 			},
 		},
 	}
-	for err := range nettest.OpenReport() {
+	for err := range nettest.OpenReport(context.Background()) {
 		if err != nil {
 			t.Log(err)
 		}
@@ -286,18 +274,18 @@ func TestNewMeasurementWorks(t *testing.T) {
 
 func measurementLifecycle(t *testing.T, expectedErr error) {
 	nettest := &Nettest{
-		Ctx:             context.Background(),
 		SoftwareName:    "ooniprobe-mocked",
 		SoftwareVersion: "1.2.4",
 		TestName:        "antani",
 		TestStartTime:   FormatTimeNowUTC(),
 		TestVersion:     "4.2.1",
 	}
-	err := nettest.DiscoverAvailableCollectors()
+	ctx := context.Background()
+	err := nettest.DiscoverAvailableCollectors(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}
-	for err := range nettest.OpenReport() {
+	for err := range nettest.OpenReport(ctx) {
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -309,11 +297,11 @@ func measurementLifecycle(t *testing.T, expectedErr error) {
 	m.TestKeys = struct{}{}
 	m.MeasurementRuntime = 1.17
 	m.Input = ""
-	err = nettest.SubmitMeasurement(&m)
+	err = nettest.SubmitMeasurement(ctx, &m)
 	if err != expectedErr {
 		t.Fatalf("SubmitMeasurement did not return: %+v", expectedErr)
 	}
-	err = nettest.CloseReport()
+	err = nettest.CloseReport(ctx)
 	if err != nil {
 		t.Fatal(err)
 	}

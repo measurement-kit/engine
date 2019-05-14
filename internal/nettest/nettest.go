@@ -4,24 +4,15 @@
 // is a separate operation. This allows you to handle errors and results
 // of each separate operation in the way you find most convenient.
 //
+// This is an internal API that you should use to implement a nettest.
+//
 // Creating a nettest
 //
-// When creating a nettest implemented as part of this codebase, just
-// use the nettest specific factory, e.g.:
-//
-//     nettest := psiphontunnel.NewNettest(ctx, config)
-//
-// When creating a nettest this way, consult the documentation of
-// such factory function to understand what nettest fields are initialized
-// by it and which fields you need to initialize manually.
-//
-// Alternatively, you can directly instantiate a nettest variable using:
+// Instantiate a nettest variable using:
 //
 //     var nettest nettest.Nettest
 //
 // In such case, you MUST fill in the following fields:
-//
-// - nettest.Ctx with a context for the nettest
 //
 // - nettest.TestName with the name of the nettest
 //
@@ -43,14 +34,16 @@
 //
 // For example
 //
-//     nettest.Ctx = context.Background()
 //     nettest.TestName = "nettest"
 //     nettest.TestVersion = "0.0.1"
 //     nettest.SoftwareName = "example"
 //     nettest.SoftwareVersion = "0.0.1"
 //     nettest.TestStartTime = nettest.FormatTimeNowUTC()
-//     nettest.Main = func(input string, m *model.Measurement, ch chan<- model.Event) {
-//       // perform measurement and initialize m
+//     nettest.Main = func(
+//       ctx context.Context, input string, m *model.Measurement,
+//       ch chan<- model.Event,
+//     ) {
+//       // perform measurement and initialize m with results
 //     }
 //
 // Configuring specific bouncers
@@ -77,7 +70,7 @@
 //
 // To automatically discover collectors do the following:
 //
-//     err := nettest.DiscoverAvailableCollectors()
+//     err := nettest.DiscoverAvailableCollectors(ctx)
 //     if err != nil {
 //       return
 //     }
@@ -95,7 +88,7 @@
 // If your test needs test helpers, you should discover the available
 // test helpers using:
 //
-//     err = nettest.DiscoverAvailableTestHelpers()
+//     err = nettest.DiscoverAvailableTestHelpers(ctx)
 //     if err != nil {
 //       return
 //     }
@@ -125,12 +118,12 @@
 // the ASNDatabasePath fields to point to valid and current MaxMind
 // MMDB databases; e.g.,
 //
-//     nettest.CountryDatabasePath = "country.mmdb.gz"
-//     nettest.ASNDatabasePath = "asn.mmdb.gz"
+//     nettest.CountryDatabasePath = "country.mmdb"
+//     nettest.ASNDatabasePath = "asn.mmdb"
 //
 // Then run:
 //
-//     err = nettest.GeoLookup()
+//     err = nettest.GeoLookup(ctx)
 //     if err != nil {
 //       return
 //     }
@@ -144,7 +137,7 @@
 //
 // The resolver lookup step discovers the resolver IP. Run:
 //
-//     err = nettest.ResolverLookup()
+//     err = nettest.ResolverLookup(ctx)
 //     if err != nil {
 //       return
 //     }
@@ -156,13 +149,13 @@
 //
 // This is required to submit measurements to a collector. Run:
 //
-//     for err := range nettest.OpenReport() {
+//     for err := range nettest.OpenReport(ctx) {
 //       if err != nil {
 //         // warn and inform the user
 //       }
 //     }
 //     if nettest.Report.ID != "" {
-//       defer nettest.CloseReport()
+//       defer nettest.CloseReport(ctx)
 //     } else {
 //       // warn and inform user
 //     }
@@ -198,10 +191,10 @@
 // measurement for a specific input and fill the above measurement
 // fields by using:
 //
-//     for ev := range nettest.StartMeasurement(input, &measurement) {
+//     for ev := range nettest.StartMeasurement(ctx, input, &measurement) {
 //       // handle nettest generated events
 //     }
-//     // nettest done; you may want to inspect measurement
+//     // nettest done; you most likely want to inspect measurement
 //
 // where input is an empty string if the nettest does not take any
 // input. Otherwise, you'll need to call the (possibly foreign)
@@ -218,7 +211,7 @@
 //
 // To submit a measurement, run:
 //
-//     err := nettest.SubmitMeasurement(&measurement)
+//     err := nettest.SubmitMeasurement(ctx, &measurement)
 //     if err != nil {
 //       return
 //     }
@@ -250,21 +243,24 @@ func FormatTimeNowUTC() string {
 	return time.Now().UTC().Format(DateFormat)
 }
 
-// MainFunc is the measurement main. The first argument (input) is the
+// MainFunc is the measurement main. The first argument (ctx) is the context
+// that you want to use for measuring. The second argument (input) is the
 // input of the measurement. A nettest that does not take any input expects you
-// to pass an empty string here. The second argument (mstub) is the stub
+// to pass an empty string here. The third argument (mstub) is the stub
 // measurement, partially initialized by the nettest. The runner implementation
 // MUST fill all the fields that are not initialized by NewMeasurement (see
-// above for a complete list of such fields). The third argument (ch) is a
+// above for a complete list of such fields). The fourth argument (ch) is a
 // channel where the nettest should post asynchronous events. The runner
 // MUST NOT close the channel as it is managed by nettest.StartMeasurement.
-type MainFunc = func(input string, mstub *model.Measurement, ch chan<- model.Event)
+type MainFunc = func(
+	ctx context.Context,
+	input string,
+	mstub *model.Measurement,
+	ch chan<- model.Event,
+)
 
 // Nettest is a nettest.
 type Nettest struct {
-	// Ctx is the context for the nettest.
-	Ctx context.Context
-
 	// TestName is the test name.
 	TestName string
 
@@ -333,12 +329,12 @@ func (nettest *Nettest) getAvailableBouncers() []model.Service {
 }
 
 // DiscoverAvailableCollectors discovers the available collectors.
-func (nettest *Nettest) DiscoverAvailableCollectors() error {
+func (nettest *Nettest) DiscoverAvailableCollectors(ctx context.Context) error {
 	for _, e := range nettest.getAvailableBouncers() {
 		if e.Type != "https" {
 			continue
 		}
-		collectors, err := bouncer.GetCollectors(nettest.Ctx, bouncer.Config{
+		collectors, err := bouncer.GetCollectors(ctx, bouncer.Config{
 			BaseURL: e.Address,
 		})
 		if err != nil {
@@ -351,12 +347,12 @@ func (nettest *Nettest) DiscoverAvailableCollectors() error {
 }
 
 // DiscoverAvailableTestHelpers discovers the available test helpers.
-func (nettest *Nettest) DiscoverAvailableTestHelpers() error {
+func (nettest *Nettest) DiscoverAvailableTestHelpers(ctx context.Context) error {
 	for _, e := range nettest.getAvailableBouncers() {
 		if e.Type != "https" {
 			continue
 		}
-		testHelpers, err := bouncer.GetTestHelpers(nettest.Ctx, bouncer.Config{
+		testHelpers, err := bouncer.GetTestHelpers(ctx, bouncer.Config{
 			BaseURL: e.Address,
 		})
 		if err != nil {
@@ -372,7 +368,7 @@ func (nettest *Nettest) DiscoverAvailableTestHelpers() error {
 var ErrNoDatabasesPath = errors.New("unspecified ASN and/or country path")
 
 // GeoLookup performs the geolookup (probe_ip, probe_asn, etc.)
-func (nettest *Nettest) GeoLookup() error {
+func (nettest *Nettest) GeoLookup(ctx context.Context) error {
 	nettest.ProbeIP = "127.0.0.1"
 	nettest.ProbeASN = "AS0"
 	nettest.ProbeCC = "ZZ"
@@ -381,12 +377,12 @@ func (nettest *Nettest) GeoLookup() error {
 }
 
 // ResolverLookup discovers the resolver's IP address.
-func (nettest *Nettest) ResolverLookup() error {
+func (nettest *Nettest) ResolverLookup(ctx context.Context) error {
 	return errors.New("Not implemented")
 }
 
 // openReport is the internal function that open a report.
-func (nettest *Nettest) openReport(out chan<- error) {
+func (nettest *Nettest) openReport(ctx context.Context, out chan<- error) {
 	defer close(out)
 	if nettest.Report.ID != "" {
 		return
@@ -395,7 +391,7 @@ func (nettest *Nettest) openReport(out chan<- error) {
 		if e.Type != "https" {
 			continue
 		}
-		report, err := collector.Open(nettest.Ctx, collector.Config{
+		report, err := collector.Open(ctx, collector.Config{
 			BaseURL: e.Address,
 		}, collector.ReportTemplate{
 			ProbeASN:        nettest.ProbeASN,
@@ -415,9 +411,9 @@ func (nettest *Nettest) openReport(out chan<- error) {
 }
 
 // OpenReport opens a new report for the nettest.
-func (nettest *Nettest) OpenReport() <-chan error {
+func (nettest *Nettest) OpenReport(ctx context.Context) <-chan error {
 	out := make(chan error)
-	go nettest.openReport(out)
+	go nettest.openReport(ctx, out)
 	return out
 }
 
@@ -449,25 +445,32 @@ func (nettest *Nettest) NewMeasurement() model.Measurement {
 // will be closed when the measurement is complete. This function will cause
 // a panic if the nettest.Main field is not initialized.
 func (nettest *Nettest) StartMeasurement(
-	input string, measurement *model.Measurement) <-chan model.Event {
+	ctx context.Context,
+	input string,
+	measurement *model.Measurement,
+) <-chan model.Event {
 	outch := make(chan model.Event)
 	go func() {
 		defer close(outch)
-		nettest.Main(input, measurement, outch)
+		nettest.Main(ctx, input, measurement, outch)
 	}()
 	return outch
 }
 
 // updateReport allows to inject errors in tests
-var updateReport = func(ctx context.Context, r *collector.Report, m *model.Measurement) (string, error) {
+var updateReport = func(
+	ctx context.Context, r *collector.Report, m *model.Measurement,
+) (string, error) {
 	return r.Update(ctx, *m)
 }
 
 // SubmitMeasurement submits a measurement to the selected collector. It is
 // safe to call this function from different goroutines concurrently as long
 // as the measurement is not shared by the goroutines.
-func (nettest *Nettest) SubmitMeasurement(measurement *model.Measurement) error {
-	measurementID, err := updateReport(nettest.Ctx, &nettest.Report, measurement)
+func (nettest *Nettest) SubmitMeasurement(
+	ctx context.Context, measurement *model.Measurement,
+) error {
+	measurementID, err := updateReport(ctx, &nettest.Report, measurement)
 	if err != nil {
 		return err
 	}
@@ -476,6 +479,6 @@ func (nettest *Nettest) SubmitMeasurement(measurement *model.Measurement) error 
 }
 
 // CloseReport closes an open report.
-func (nettest *Nettest) CloseReport() error {
-	return nettest.Report.Close(nettest.Ctx)
+func (nettest *Nettest) CloseReport(ctx context.Context) error {
+	return nettest.Report.Close(ctx)
 }
