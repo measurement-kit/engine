@@ -6,9 +6,9 @@ import (
 
 	upstream "github.com/m-lab/ndt7-client-go"
 	upstreamSpec "github.com/m-lab/ndt7-client-go/spec"
+	"github.com/measurement-kit/engine/internal/nettest"
 	"github.com/measurement-kit/engine/internal/version"
 	"github.com/measurement-kit/engine/model"
-	"github.com/measurement-kit/engine/nettest"
 )
 
 // Client is a ndt7 client
