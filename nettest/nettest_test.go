@@ -7,7 +7,7 @@ import (
 	"time"
 
 	"github.com/measurement-kit/engine/internal/collector"
-	"github.com/measurement-kit/engine/internal/model"
+	"github.com/measurement-kit/engine/model"
 )
 
 // TestGetAvailableBouncersDefault ensures that we can set available

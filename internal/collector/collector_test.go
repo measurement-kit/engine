@@ -5,7 +5,7 @@ import (
 	"errors"
 	"testing"
 
-	"github.com/measurement-kit/engine/internal/model"
+	"github.com/measurement-kit/engine/model"
 )
 
 type fakeTestKeys struct {

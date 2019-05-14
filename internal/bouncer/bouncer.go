@@ -9,7 +9,7 @@ import (
 	"encoding/json"
 
 	"github.com/measurement-kit/engine/internal/httpx"
-	"github.com/measurement-kit/engine/internal/model"
+	"github.com/measurement-kit/engine/model"
 )
 
 // Config contains the bouncer configuration.

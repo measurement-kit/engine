@@ -232,7 +232,7 @@ import (
 
 	"github.com/measurement-kit/engine/internal/bouncer"
 	"github.com/measurement-kit/engine/internal/collector"
-	"github.com/measurement-kit/engine/internal/model"
+	"github.com/measurement-kit/engine/model"
 )
 
 // DateFormat is the format used by OONI for dates inside reports.

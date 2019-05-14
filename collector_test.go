@@ -6,8 +6,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/measurement-kit/engine/internal/model"
-	"github.com/measurement-kit/engine/internal/nettest"
+	"github.com/measurement-kit/engine/model"
+	"github.com/measurement-kit/engine/nettest"
 )
 
 const origMeasurement = `{

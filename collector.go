@@ -6,8 +6,8 @@ import (
 	"fmt"
 
 	"github.com/measurement-kit/engine/internal"
-	"github.com/measurement-kit/engine/internal/model"
-	"github.com/measurement-kit/engine/internal/nettest"
+	"github.com/measurement-kit/engine/model"
+	"github.com/measurement-kit/engine/nettest"
 )
 
 // CollectorSubmitResults contains the results of submitting or resubmitting
