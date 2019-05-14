@@ -1,3 +1,11 @@
+github.com/gorilla/websocket v1.4.0 h1:WDFjx/TMzVgy9VdMMQi2K2Emtwi2QcUQsztZ/zLaH/Q=
+github.com/gorilla/websocket v1.4.0/go.mod h1:E7qHFY5m1UJ88s3WnNqhKjPHQ0heANvMoAMk2YaljkQ=
+github.com/m-lab/ndt7-client-go v0.0.0-20190513211611-5177d4199464 h1:O8Af/VW0ZLfO1afFDYBn7I0LtQWE319vdjNhz6AoYLo=
+github.com/m-lab/ndt7-client-go v0.0.0-20190513211611-5177d4199464/go.mod h1:W0eRy7QDkSDgkYDVdIOHjp3O5YGy2BuCVjr3ewoKUcc=
+github.com/mccutchen/go-httpbin v0.0.0-20190321153040-24f381761ef0 h1:MU80SJeaRfeAu0JXCTM35jUsJkTDfZyz5IGiiMJzL0A=
+github.com/mccutchen/go-httpbin v0.0.0-20190321153040-24f381761ef0/go.mod h1:fhpOYavp5g2K74XDl/ao2y4KvhqVtKlkg1e+0UaQv7I=
+github.com/mccutchen/go-httpbin v1.1.1 h1:aEws49HEJEyXHLDnshQVswfUlCVoS8g6h9YaDyaW7RE=
+github.com/mccutchen/go-httpbin v1.1.1/go.mod h1:fhpOYavp5g2K74XDl/ao2y4KvhqVtKlkg1e+0UaQv7I=
 golang.org/x/crypto v0.0.0-20190308221718-c2843e01d9a2/go.mod h1:djNgcEr1/C05ACkg1iLfiJU5Ep61QUkGW8qpdssI0+w=
 golang.org/x/net v0.0.0-20190509222800-a4d6f7feada5 h1:6M3SDHlHHDCx2PcQw3S4KsR170vGqDhJDOmpVd4Hjak=
 golang.org/x/net v0.0.0-20190509222800-a4d6f7feada5/go.mod h1:t9HGtf8HONx5eT2rtn7q6eTqICYqUVnKs3thJo3Qplg=
