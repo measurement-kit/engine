@@ -8,7 +8,7 @@
 ## Abstract
 
 This is a new engine for Measurement Kit (MK) written in Go. It is motivated
-by the desired to integrate a [Psiphon](https://www.psiphon3.com) network
+by the desire to integrate a [Psiphon](https://www.psiphon3.com) network
 test (nettest). Because Psiphon is written in Go, integrating
 it implies integrating the Go runtime. In turn, this fact opens up
 the opportunity of rewriting parts of MK in Go. In fact,
@@ -58,7 +58,7 @@ as long as the C++ implementation is maintained (as of this writing we
 don't have any plans on deprecating it).
 
 This strategy is sound because the two implementations can cohexist
-side by side in OONI apps for quite some time. At the beinning, OONI
+side by side in OONI apps for quite some time. At the beginning, OONI
 will use the Go code for Psiphon, and the C++ code for all
 the other functionality. The apps will be more bloated, but—as mentioned
 above—we want to run Psiphon tests, so we cannot avoid that. This is
