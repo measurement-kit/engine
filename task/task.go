@@ -13,6 +13,9 @@ import (
 
 // Config contains the task settings.
 type Config struct {
+	// IgnoreBouncerError indicates whether we should ignore bouncer errors.
+	IgnoreBouncerError bool
+
 	// Inputs is the list of inputs for the measurement task.
 	Inputs []string
 
@@ -30,7 +33,7 @@ func discoverAvailableCollectors(
 	if !config.NoBouncer {
 		out <- model.NewLogInfoEvent("discovering available collectors")
 		err := nt.DiscoverAvailableCollectors(ctx)
-		if err != nil {
+		if err != nil && !config.IgnoreBouncerError {
 			out <- model.NewLogWarningEvent(
 				err, "cannot discover available collectors",
 			)
@@ -47,7 +50,7 @@ func discoverAvailableTestHelpers(
 	if !config.NoBouncer {
 		out <- model.NewLogInfoEvent("discovering available test helpers")
 		err := nt.DiscoverAvailableTestHelpers(ctx)
-		if err != nil {
+		if err != nil && !config.IgnoreBouncerError {
 			out <- model.NewLogWarningEvent(
 				err, "cannot discover available test helpers",
 			)
