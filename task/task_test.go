@@ -19,3 +19,19 @@ func TestNdt7Integration(t *testing.T) {
 		t.Log(string(data))
 	}
 }
+
+// TestPsiphonTunnelIntegration runs a psiphontunnel nettest
+func TestPsiphonTunnelIntegration(t *testing.T) {
+	ctx := context.Background()
+	config := task.Config{
+		ConfigFilePath: "../testdata/psiphon_config.json",
+		WorkDirPath:    "/tmp",
+	}
+	for ev := range task.StartPsiphonTunnel(ctx, config) {
+		data, err := json.Marshal(ev)
+		if err != nil {
+			t.Fatal(err)
+		}
+		t.Log(string(data))
+	}
+}

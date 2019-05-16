@@ -8,11 +8,16 @@ import (
 
 	"github.com/measurement-kit/engine/internal/nettest"
 	"github.com/measurement-kit/engine/internal/nettest/ndt7"
+	"github.com/measurement-kit/engine/internal/nettest/psiphontunnel"
+	"github.com/measurement-kit/engine/internal/nettest/psiphontunnel/runner"
 	"github.com/measurement-kit/engine/model"
 )
 
 // Config contains the task settings.
 type Config struct {
+	// ConfigFilePath is the path to a task specific config file.
+	ConfigFilePath string
+
 	// IgnoreBouncerError indicates whether we should ignore bouncer errors.
 	IgnoreBouncerError bool
 
@@ -24,6 +29,9 @@ type Config struct {
 
 	// NoCollector indicates whether we should not use the collector.
 	NoCollector bool
+
+	// WorkDirPath is the working directory to use
+	WorkDirPath string
 }
 
 func discoverAvailableCollectors(
@@ -209,6 +217,18 @@ func startTaskAndFilterEvents(
 func StartNdt7(ctx context.Context, config Config) <-chan model.Event {
 	out := make(chan model.Event)
 	nt := ndt7.NewNettest()
+	config.Inputs = []string{""} // force running just once
+	go startTaskAndFilterEvents(ctx, nt, config, out)
+	return out
+}
+
+// StartPsiphonTunnel starts a new psiphontunnel task
+func StartPsiphonTunnel(ctx context.Context, config Config) <-chan model.Event {
+	out := make(chan model.Event)
+	nt := psiphontunnel.NewNettest(runner.Config{
+		ConfigFilePath: config.ConfigFilePath,
+		WorkDirPath:    config.WorkDirPath,
+	})
 	config.Inputs = []string{""} // force running just once
 	go startTaskAndFilterEvents(ctx, nt, config, out)
 	return out
