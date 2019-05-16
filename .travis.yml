@@ -2,11 +2,11 @@ language: go
 go:
 - 1.12.x
 dist: xenial
-
+before_install:
+- openssl aes-256-cbc -K $encrypted_0eabadf1f330_key -iv $encrypted_0eabadf1f330_iv -in testdata/psiphon_config.json.enc -out testdata/psiphon_config.json -d
 before_script:
 - go get golang.org/x/tools/cmd/cover
 - go get github.com/mattn/goveralls
-
 script:
 - go test -v -coverprofile=coverage.cov -coverpkg=./... ./...
 - $GOPATH/bin/goveralls -coverprofile=coverage.cov -service=travis-ci
