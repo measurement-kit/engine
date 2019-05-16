@@ -23,13 +23,9 @@ func TestNewNettestIntegration(t *testing.T) {
 		t.Fatal(err)
 	}
 	log.Infof("AvailableCollectors: %+v", nettest.AvailableCollectors)
-	for err := range nettest.OpenReport(ctx) {
-		if err != nil {
-			log.Warnf("OpenReport: %+v", err)
-		}
-	}
-	if nettest.Report.ID == "" {
-		t.Fatal("OpenReport: failed")
+	err = nettest.OpenReport(ctx)
+	if err != nil {
+		t.Fatal(err)
 	}
 	defer nettest.CloseReport(ctx)
 	log.Infof("Report: %+v", nettest.Report)

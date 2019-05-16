@@ -149,24 +149,15 @@
 //
 // This is required to submit measurements to a collector. Run:
 //
-//     for err := range nettest.OpenReport(ctx) {
-//       if err != nil {
-//         // warn and inform the user
-//       }
+//     err := range nettest.OpenReport(ctx) {
+//     if err != nil {
+//       return
 //     }
-//     if nettest.Report.ID != "" {
-//       defer nettest.CloseReport(ctx)
-//     } else {
-//       // warn and inform user
-//     }
+//     defer nettest.CloseReport(ctx)
 //
 // This will attempt to open a report with all the available collectors
-// and post on the returned channel each failed attempt. In case of
-// success, the channel will be immediately closed without returning
-// any error. In case all available collectors failed, the channel
-// will also be closed. Distinguish the two cases by checking whether
-// a report.ID has been configured. Note that calling OpenReport
-// when a report.ID has already been configured is a no-op.
+// and returns whether we succeeded or not. Note that, if the report has
+// already been openned, this function will be a no-op.
 //
 // Creating a new measurement
 //
@@ -381,11 +372,10 @@ func (nettest *Nettest) ResolverLookup(ctx context.Context) error {
 	return errors.New("Not implemented")
 }
 
-// openReport is the internal function that open a report.
-func (nettest *Nettest) openReport(ctx context.Context, out chan<- error) {
-	defer close(out)
+// OpenReport opens a new report for the nettest.
+func (nettest *Nettest) OpenReport(ctx context.Context) error {
 	if nettest.Report.ID != "" {
-		return
+		return nil
 	}
 	for _, e := range nettest.AvailableCollectors {
 		if e.Type != "https" {
@@ -401,20 +391,12 @@ func (nettest *Nettest) openReport(ctx context.Context, out chan<- error) {
 			TestName:        nettest.TestName,
 			TestVersion:     nettest.TestVersion,
 		})
-		if err != nil {
-			out <- err
-			continue
+		if err == nil {
+			nettest.Report = report
+			return nil
 		}
-		nettest.Report = report
-		return
 	}
-}
-
-// OpenReport opens a new report for the nettest.
-func (nettest *Nettest) OpenReport(ctx context.Context) <-chan error {
-	out := make(chan error)
-	go nettest.openReport(ctx, out)
-	return out
+	return errors.New("Cannot open report: all collectors failed")
 }
 
 // NewMeasurement returns a new measurement for this nettest. You should

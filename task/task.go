@@ -74,14 +74,10 @@ func openReport(
 ) error {
 	if !config.NoCollector {
 		out <- model.NewLogInfoEvent("opening report")
-		for err := range nt.OpenReport(ctx) {
+		err := nt.OpenReport(ctx)
+		if err != nil {
 			out <- model.NewLogWarningEvent(
-				err, "cannot open report; trying other collectors",
-			)
-		}
-		if nt.Report.ID == "" {
-			out <- model.NewLogWarningEvent(
-				nil, "failed to open report with all collectors",
+				err, "failed to open report with all collectors",
 			)
 			return errors.New("cannot open report")
 		}

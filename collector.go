@@ -98,11 +98,9 @@ func (t *CollectorSubmitTask) runWithResults(out *CollectorSubmitResults) {
 		out.Logs = fmt.Sprintf("cannot discover collectors: %s\n", err.Error())
 		return
 	}
-	for err := range nettest.OpenReport(ctx) {
+	err = nettest.OpenReport(ctx)
+	if err != nil {
 		out.Logs += fmt.Sprintf("cannot open report: %s\n", err.Error())
-	}
-	if nettest.Report.ID == "" {
-		out.Logs += fmt.Sprintf("empty report ID, assuming failure\n")
 		return
 	}
 	defer nettest.CloseReport(ctx)

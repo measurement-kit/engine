@@ -131,13 +131,9 @@ func TestOpenReportIntegration(t *testing.T) {
 			},
 		},
 	}
-	for err := range nettest.OpenReport(context.Background()) {
-		if err != nil {
-			t.Log(err)
-		}
-	}
-	if nettest.Report.ID == "" {
-		t.Fatal("OpenReport: failed")
+	err := nettest.OpenReport(context.Background())
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -159,22 +155,13 @@ func TestOpenReportMultipleTimes(t *testing.T) {
 		},
 	}
 	ctx := context.Background()
-	for err := range nettest.OpenReport(ctx) {
-		if err != nil {
-			t.Log(err)
-		}
+	err := nettest.OpenReport(ctx)
+	if err != nil {
+		t.Fatal(err)
 	}
-	if nettest.Report.ID == "" {
-		t.Fatal("OpenReport: failed")
-	}
-	reportID := nettest.Report.ID
-	for err := range nettest.OpenReport(ctx) {
-		if err != nil {
-			t.Log(err)
-		}
-	}
-	if nettest.Report.ID != reportID {
-		t.Fatal("OpenReport: changed the report ID")
+	err = nettest.OpenReport(ctx)
+	if err != nil {
+		t.Fatal(err)
 	}
 }
 
@@ -190,12 +177,8 @@ func TestOpenReportNoCollector(t *testing.T) {
 			},
 		},
 	}
-	for err := range nettest.OpenReport(context.Background()) {
-		if err != nil {
-			t.Log(err)
-		}
-	}
-	if nettest.Report.ID != "" {
+	err := nettest.OpenReport(context.Background())
+	if err == nil {
 		t.Fatal("OpenReport: we expected a failure here")
 	}
 }
@@ -212,12 +195,8 @@ func TestOpenReportCollectorOpenError(t *testing.T) {
 			},
 		},
 	}
-	for err := range nettest.OpenReport(context.Background()) {
-		if err != nil {
-			t.Log(err)
-		}
-	}
-	if nettest.Report.ID != "" {
+	err := nettest.OpenReport(context.Background())
+	if err == nil {
 		t.Fatal("OpenReport: we expected a failure here")
 	}
 }
@@ -285,13 +264,9 @@ func measurementLifecycle(t *testing.T, expectedErr error) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for err := range nettest.OpenReport(ctx) {
-		if err != nil {
-			t.Fatal(err)
-		}
-	}
-	if nettest.Report.ID == "" {
-		t.Fatal("cannot open report")
+	err = nettest.OpenReport(ctx)
+	if err != nil {
+		t.Fatal(err)
 	}
 	m := nettest.NewMeasurement()
 	m.TestKeys = struct{}{}

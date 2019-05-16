@@ -15,11 +15,9 @@ func TestIntegration(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for err := range nettest.OpenReport(ctx) {
-		t.Error(err)
-	}
-	if nettest.Report.ID == "" {
-		t.Fatal("cannot open report")
+	err = nettest.OpenReport(ctx)
+	if err != nil {
+		t.Fatal(err)
 	}
 	defer nettest.CloseReport(ctx)
 	measurement := nettest.NewMeasurement()
