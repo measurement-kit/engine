@@ -2,6 +2,9 @@
 
 # Measurement Kit engine written in Go
 
+⚠️⚠️⚠️⚠️⚠️⚠️⚠️: This repository is superseded by https://github.com/ooni/probe-engine
+and will soon be archived and discontinued. Don't depend on it!
+
 This repository contains a Measurement Kit engine written in Go.
 We currently only implement functionality that it is more practical
 to directly implement in Go (e.g. the Psiphon nettest). See the
